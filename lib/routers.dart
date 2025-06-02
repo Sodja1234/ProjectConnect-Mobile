@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:odc_mobile_template/pages/createProject/createProjectPage.dart';
 import 'pages/404/not_found_page.dart';
 import 'pages/intro/appCtrl.dart';
 import 'pages/intro/introPage.dart';
@@ -18,6 +19,13 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
       name: 'home_page',
       builder: (ctx, state) {
         return HomePage();
+      },
+    ),
+    GoRoute(
+      path: "/app/create/project",
+      name: 'create_project_page',
+      builder: (ctx, state) {
+        return ProjectFormPage();
       },
     ),
   ];

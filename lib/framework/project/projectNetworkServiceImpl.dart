@@ -29,7 +29,7 @@ class ProjectNetworkServiceImpl extends ProjectNetworkService{
 void main(){
   var roleSkillExample = RoleSkill(
     role: 'Développeur Flutter',
-    skill: ['Dart', 'Flutter', 'REST API'],
+    skills: ['Dart', 'Flutter', 'REST API'],
     description: 'Développe et maintient l\'application mobile',
   );
   var service=ProjectNetworkServiceImpl(baseUrl: 'http://10.252.252.61:8000/api', httpUtils: LocalHttpUtils());

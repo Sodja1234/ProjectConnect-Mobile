@@ -55,4 +55,21 @@ class CreateProject {
   }
 
 
+  factory CreateProject.empty() {
+    final now = DateTime.now();
+    return CreateProject(
+      title: '',
+      description: '',
+      dateStart: DateTime(now.year, now.month, now.day),
+      dateEnd: DateTime(now.year, now.month, now.day),
+      budget: 0,
+      location: '',
+      visibility: 'public',
+      domains: [],
+      roleSkills: [],
+    );
+  }
 }
+
+
+

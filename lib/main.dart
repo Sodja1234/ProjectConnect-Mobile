@@ -3,7 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:odc_mobile_template/business/services/domain/domainNetworkService.dart';
+import 'package:odc_mobile_template/business/services/project/projectNetworkService.dart';
+import 'package:odc_mobile_template/business/services/role/roleNetworkService.dart';
+import 'package:odc_mobile_template/business/services/skill/skillNetworkService.dart';
 import 'package:odc_mobile_template/business/services/user/userNetworkService.dart';
+import 'package:odc_mobile_template/framework/domain/domainNetworkServiceImpl.dart';
+import 'package:odc_mobile_template/framework/project/projectNetworkServiceImpl.dart';
+import 'package:odc_mobile_template/framework/role/roleNetworkServiceImpl.dart';
+import 'package:odc_mobile_template/framework/skill/skillNetworkServiceImpl.dart';
 import 'package:odc_mobile_template/framework/utils/localStorage/getStorageImpl.dart';
 import 'package:odc_mobile_template/utils/navigationUtils.dart';
 import 'business/services/gestion/gestionLocalService.dart';
@@ -28,6 +36,11 @@ void configureImplementations() {
   getIt.registerLazySingleton<GestionNetworkService>(() => GestionNetworkServiceImpl(baseUrl: baseUrl, httpUtils: httpUtils));
   getIt.registerLazySingleton<GestionLocalService>(() => GestionLocalServiceImpl());
   getIt.registerLazySingleton<UserNetworkService>(() => UserNetworkServiceImpl(baseUrl: baseUrl, httpUtils: httpUtils));
+  getIt.registerLazySingleton<ProjectNetworkService>(() => ProjectNetworkServiceImpl(baseUrl: baseUrl, httpUtils: httpUtils));
+  getIt.registerLazySingleton<DomainNetworkService>(() => DomainNetworkServiceImpl(baseUrl: baseUrl, httpUtils: httpUtils));
+  getIt.registerLazySingleton<RoleNetworkService>(() => RoleNetworkServiceImpl(baseUrl: baseUrl, httpUtils: httpUtils));
+  getIt.registerLazySingleton<SkillNetworkService>(() => SkillNetworkServiceImpl(baseUrl: baseUrl, httpUtils: httpUtils));
+
   getIt.registerLazySingleton<UserLocalService>(() => UserLocalServiceImpl(box: localManager));
 }
 

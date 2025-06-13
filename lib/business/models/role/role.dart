@@ -1,28 +1,32 @@
 class Role{
   final int id;
   final String name;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
 
   Role({
     required this.id,
     required this.name,
-    required this.createdAt,
-    required this.updatedAt
+    this.createdAt,
+     this.updatedAt
 });
   factory Role.fromJson(Map<String, dynamic> json) {
     return Role(
       id: json['id'],
-      name: json['name'],
-      createdAt: DateTime.parse(json['created_at']),
-      updatedAt: DateTime.parse(json['updated_at']),
+      name: json['name']?.toString() ?? '',  // converti en String, vide si null
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'])
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.tryParse(json['updated_at'])
+          : null,
     );
   }
   Map toJson() => {
         'id': id,
         'name': name,
-        'created_at': createdAt.toIso8601String(),
-        'updated_at': updatedAt.toIso8601String(),
+        'created_at': createdAt?.toIso8601String(),
+        'updated_at': updatedAt?.toIso8601String(),
       };
 
 

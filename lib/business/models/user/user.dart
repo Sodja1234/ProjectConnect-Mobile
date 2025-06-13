@@ -1,7 +1,7 @@
 //generate class user with optional fields and toJosn and fromJson methods
 
 class User {
-  final String? id;
+  final int? id;
   final String? name;
   final String? email;
 

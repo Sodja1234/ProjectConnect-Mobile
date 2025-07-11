@@ -1,5 +1,13 @@
 import 'package:flutter/material.dart';
 
+// Palette de couleurs
+final Color primaryColor = const Color(0xFF1A1A1A);      // Noir pour les titres
+final Color accentColor = const Color(0xFFFF6B35);       // Orange principal
+final Color lightGray = const Color(0xFFF8F9FA);         // Gris très clair pour les backgrounds
+final Color mediumGray = const Color(0xFFE9ECEF);        // Gris moyen pour les bordures
+final Color darkGray = const Color(0xFF6C757D);          // Gris foncé pour le texte secondaire
+final Color cardBackground = Colors.white;               // Blanc pour les cartes
+
 /// Widget personnalisé pour les champs de formulaire avec label
 class FormFields extends StatelessWidget {
   final String label;
@@ -12,7 +20,7 @@ class FormFields extends StatelessWidget {
     required this.label,
     required this.child,
     this.isRequired = false,
-    this.labelColor = Colors.black,
+    this.labelColor = const Color(0xFF1A1A1A), // Utilisation du noir primaire par défaut
   });
 
   @override
@@ -64,24 +72,24 @@ class ErrorMessage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.errorContainer,
+        color: lightGray, // Gris très clair pour le fond
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: Theme.of(context).colorScheme.error,
+          color: mediumGray, // Gris moyen pour la bordure
         ),
       ),
       child: Row(
         children: [
           Icon(
             Icons.error_outline,
-            color: Theme.of(context).colorScheme.error,
+            color: accentColor, // Orange principal pour l'icône
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
               message,
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onErrorContainer,
+                color: primaryColor, // Noir pour le texte
               ),
             ),
           ),
@@ -91,7 +99,7 @@ class ErrorMessage extends StatelessWidget {
               onTap: onDismiss,
               child: Icon(
                 Icons.close,
-                color: Theme.of(context).colorScheme.error,
+                color: darkGray, // Gris foncé pour l'icône de fermeture
                 size: 18,
               ),
             ),
@@ -114,11 +122,10 @@ class SuccessMessage extends StatelessWidget {
     super.key,
     required this.message,
     this.onDismiss,
-    this.backgroundColor = const Color(0xFFFFEDD5), // Orange très clair
-    this.textColor = const Color(0xFFEA580C), // Orange principal
-    this.borderColor = const Color(0xFFFDBA74), // Orange clair
+    this.backgroundColor = const Color(0xFFF8F9FA), // lightGray comme const
+    this.textColor = const Color(0xFF1A1A1A),      // primaryColor comme const
+    this.borderColor = const Color(0xFFFF6B35),   // Orange principal par défaut
   });
-
 
   @override
   Widget build(BuildContext context) {
@@ -135,7 +142,7 @@ class SuccessMessage extends StatelessWidget {
         children: [
           Icon(
             Icons.check_circle,
-            color: textColor,
+            color: accentColor, // Orange principal pour l'icône
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -152,7 +159,7 @@ class SuccessMessage extends StatelessWidget {
               onTap: onDismiss,
               child: Icon(
                 Icons.close,
-                color: textColor,
+                color: darkGray, // Gris foncé pour l'icône de fermeture
                 size: 18,
               ),
             ),

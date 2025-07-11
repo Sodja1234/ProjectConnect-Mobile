@@ -1,5 +1,6 @@
 import 'package:odc_mobile_template/business/models/domain/domain.dart';
 import 'package:odc_mobile_template/business/models/project/projectRoleSkill.dart';
+import 'package:odc_mobile_template/business/models/project/status.dart';
 import 'package:odc_mobile_template/business/models/user/user.dart';
 
 class Project {
@@ -9,6 +10,7 @@ final String description;
 final String? dateStart;
 final String? dateEnd;
 final String? budget;
+final Status status;
 final String location;
 final String visibility;
 final User createdBy;
@@ -26,6 +28,7 @@ Project({
   this.dateEnd,
   this.budget,
   required this.location,
+  required this.status,
   required this.visibility,
   required this.createdBy,
   required this.updatedBy,
@@ -47,6 +50,7 @@ location: json['location'] ?? '',
 visibility: json['visibility'] ?? '',
 createdBy: User.fromJson(json['created_by']),
 updatedBy: User.fromJson(json['updated_by']),
+status: Status.fromJson(json['status']),
 createdAt: json['created_at'] ?? '',
 updatedAt: json['updated_at'] ?? '',
 domains: (json['domains'] as List<dynamic>?)

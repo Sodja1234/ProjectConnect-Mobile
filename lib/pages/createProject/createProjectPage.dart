@@ -5,11 +5,9 @@ import 'package:odc_mobile_template/business/models/project/roleSkill.dart';
 import 'package:odc_mobile_template/pages/createProject/createProjectCtrl.dart';
 import 'package:odc_mobile_template/pages/createProject/createProjectState.dart';
 import 'package:odc_mobile_template/pages/widget/customWidget.dart';
-
 import '../../../main.dart';
 import '../../../utils/navigationUtils.dart';
 
-/// Page de création de projet
 class ProjectFormPage extends ConsumerStatefulWidget {
   const ProjectFormPage({super.key});
 
@@ -21,10 +19,13 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   final _formKey = GlobalKey<FormState>();
   final navigation = getIt<NavigationUtils>();
 
-  // Couleurs personnalisées
-  final Color primaryOrange = const Color(0xFFEA580C); // Orange principal
-  final Color lightOrange = const Color(0xFFFDBA74); // Orange clair
-  final Color veryLightOrange = const Color(0xFFFFEDD5); // Orange très clair
+  // Définition des couleurs comme dans ListProjectPage
+  final Color primaryColor = const Color(0xFF1A1A1A);      // Noir pour les titres
+  final Color accentColor = const Color(0xFFFF6B35);         // Orange principal
+  final Color lightGray = const Color(0xFFF8F9FA);         // Gris très clair pour les backgrounds
+  final Color mediumGray = const Color(0xFFE9ECEF);        // Gris moyen pour les bordures
+  final Color darkGray = const Color(0xFF6C757D);          // Gris foncé pour le texte secondaire
+  final Color cardBackground = Colors.white;               // Blanc pour les cards
 
   // Contrôleurs pour les champs de texte
   final _titleController = TextEditingController();
@@ -38,13 +39,9 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      var ctrl = ref.read(createProjectCtrlProvider.notifier);
-      ctrl.loadData();
+      ref.read(createProjectCtrlProvider.notifier).loadData();
     });
-
-    // Ajouter les listeners après la construction initiale
     Future.microtask(() {
       _titleController.addListener(_clearErrorOnChange);
       _descriptionController.addListener(_clearErrorOnChange);
@@ -59,143 +56,68 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
     _descriptionController.dispose();
     _budgetController.dispose();
     _locationController.dispose();
-
-    /*for (final controller in _roleControllers) {
-      controller.dispose();
-    }*/
     for (final controller in _descriptionControllers) {
       controller.dispose();
     }
     for (final controller in _skillControllers) {
       controller.dispose();
     }
-
     super.dispose();
   }
 
   void _clearErrorOnChange() {
-    // Utiliser Future.microtask pour retarder la modification de l'état
     Future.microtask(() {
       if (mounted) {
-        final ctrl = ref.read(createProjectCtrlProvider.notifier);
-        ctrl.clearError();
+        ref.read(createProjectCtrlProvider.notifier).clearError();
       }
     });
   }
 
-  /// Affiche un sélecteur de date
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     final ctrl = ref.read(createProjectCtrlProvider.notifier);
     final state = ref.read(createProjectCtrlProvider);
-
-    final DateTime initialDate =
-        isStartDate ? state.project.dateStart : state.project.dateEnd;
-
     final DateTime? pickedDate = await showDatePicker(
       context: context,
-      initialDate: initialDate,
+      initialDate: isStartDate ? state.project.dateStart : state.project.dateEnd,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
       builder: (context, child) {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: ColorScheme.light(
-              primary: primaryOrange,
+              primary: accentColor,
               onPrimary: Colors.white,
-              onSurface: Colors.black,
+              onSurface: primaryColor,
             ),
           ),
           child: child!,
         );
       },
     );
-
     if (pickedDate != null) {
-      if (isStartDate) {
-        ctrl.updateDateStart(pickedDate);
-      } else {
-        ctrl.updateDateEnd(pickedDate);
-      }
+      isStartDate
+          ? ctrl.updateDateStart(pickedDate)
+          : ctrl.updateDateEnd(pickedDate);
     }
   }
 
-  /// Synchronise les contrôleurs avec l'état
-  void _syncControllers(CreateProjectState state) {
-    // Désactiver temporairement les listeners
-    _titleController.removeListener(_clearErrorOnChange);
-    _descriptionController.removeListener(_clearErrorOnChange);
-    _budgetController.removeListener(_clearErrorOnChange);
-    _locationController.removeListener(_clearErrorOnChange);
-
-    // Synchroniser les contrôleurs de base
-   /* if (_titleController.text != state.project.title) {
-      _titleController.text = state.project.title;
-    }
-    if (_descriptionController.text != state.project.description) {
-      _descriptionController.text = state.project.description;
-    }
-    if (_budgetController.text != state.project.budget.toString()) {
-      _budgetController.text = state.project.budget.toString();
-    }
-    if (_locationController.text != state.project.location) {
-      _locationController.text = state.project.location;
-    }
-
-    // Synchroniser les contrôleurs des rôles
-     while (_roleControllers.length < state.project.roleSkills.length) {
-      _roleControllers.add(TextEditingController());
-      _descriptionControllers.add(TextEditingController());
-      _skillControllers.add(TextEditingController());
-    }
-    while (_roleControllers.length > state.project.roleSkills.length) {
-      _roleControllers.removeLast().dispose();
-      _descriptionControllers.removeLast().dispose();
-      _skillControllers.removeLast().dispose();
-    }
-
-    for (int i = 0; i < state.project.roleSkills.length; i++) {
-      if (_roleControllers[i].text != state.project.roleSkills[i].role) {
-        _roleControllers[i].text = state.project.roleSkills[i].role;
-      }
-      if (_descriptionControllers[i].text != state.project.roleSkills[i].description) {
-        _descriptionControllers[i].text = state.project.roleSkills[i].description;
-      }
-    }*/
-
-    // Synchroniser les contrôleurs des compétences
-    for (int i = 0; i < state.newSkills.length; i++) {
-      if (i < _skillControllers.length &&
-          _skillControllers[i].text != state.newSkills[i]) {
-        _skillControllers[i].text = state.newSkills[i];
-      }
-    }
-
-    // Réactiver les listeners après la synchronisation
-    Future.microtask(() {
-      _titleController.addListener(_clearErrorOnChange);
-      _descriptionController.addListener(_clearErrorOnChange);
-      _budgetController.addListener(_clearErrorOnChange);
-      _locationController.addListener(_clearErrorOnChange);
-    });
-  }
-
-  // Style personnalisé pour les champs de formulaire
   InputDecoration _getInputDecoration(String hintText) {
     return InputDecoration(
       hintText: hintText,
+      hintStyle: TextStyle(color: darkGray),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: lightOrange),
+        borderSide: BorderSide(color: mediumGray),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: primaryOrange, width: 2),
+        borderSide: BorderSide(color: accentColor, width: 2),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide(color: lightOrange),
+        borderSide: BorderSide(color: mediumGray),
       ),
-      fillColor: Colors.white,
+      fillColor: cardBackground,
       filled: true,
     );
   }
@@ -205,23 +127,17 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
     final state = ref.watch(createProjectCtrlProvider);
     final ctrl = ref.read(createProjectCtrlProvider.notifier);
 
-    print("chosen ${state.chosenRoles.length} rows");
-
-    // Synchroniser les contrôleurs
-    //_syncControllers(state);
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: lightGray,
       appBar: AppBar(
         title: const Text('Nouveau projet'),
-        backgroundColor: primaryOrange,
+        backgroundColor: accentColor,
         foregroundColor: Colors.white,
         leading: IconButton(
-          onPressed: () => navigation.pop(),
+          onPressed: () => navigation.replace('/public/home'),
           icon: const Icon(Icons.arrow_back),
         ),
         actions: [
-          // Bouton de rechargement pour déboguer
           if (state.isLoading)
             const Padding(
               padding: EdgeInsets.all(16.0),
@@ -244,232 +160,134 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
       ),
       body: Stack(
         children: [
-          // Contenu principal
           state.isLoading
               ? Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation<Color>(primaryOrange),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text('Chargement des données...'),
-                  ],
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(accentColor),
                 ),
-              )
+                const SizedBox(height: 16),
+                const Text('Chargement des données...'),
+              ],
+            ),
+          )
               : SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Informations de debug
-                        const SizedBox(height: 16),
-
-                        // Titre
-                         _titleField(),
-
-                        // Description
-                         _descriptionField(),
-
-                        // Dates
-                        Row(
-                          children: [
-                            Expanded(child: _startDateField()),
-                            const SizedBox(width: 16),
-                            Expanded(child: _endDateField()),
-                          ],
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 16),
+                  _titleField(),
+                  _descriptionField(),
+                  Row(
+                    children: [
+                      Expanded(child: _startDateField()),
+                      const SizedBox(width: 16),
+                      Expanded(child: _endDateField()),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: _budgetField()),
+                      const SizedBox(width: 16),
+                      Expanded(child: _locationField()),
+                    ],
+                  ),
+                  _visibilityField(),
+                  _domainField(),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Rôles et Compétences',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
                         ),
-
-                        // Budget et Lieu
-                        Row(
-                          children: [
-                            Expanded(child: _budgetField()),
-                            const SizedBox(width: 16),
-                            Expanded(child: _locationField()),
-                          ],
-                        ),
-
-                        // Visibilité
-                         _visibilityField(),
-
-                        // Domaines
-                         _domainField(),
-
-                        // Rôles et Compétences
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Rôles et Compétences',
-                              style: Theme.of(
-                                context,
-                              ).textTheme.titleMedium?.copyWith(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            ElevatedButton.icon(
-                              onPressed: () {
-                                ctrl.addRoleSkill();
-                                _roleControllers.add(TextEditingController());
-                                _descriptionControllers.add(
-                                  TextEditingController(),
-                                );
-                                _skillControllers.add(TextEditingController());
-                                setState(() {});
-                              },
-                              icon: const Icon(
-                                Icons.add_circle_outline,
-                                size: 18,
-                              ),
-                              label: const Text('Ajouter un rôle'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: primaryOrange,
-                                foregroundColor:Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        if (state.chosenRoles.isEmpty)
-                          const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Text(
-                              'Aucun rôle ajouté. Cliquez sur le bouton ci-dessus pour ajouter un rôle.',
-                              style: TextStyle(
-                                fontStyle: FontStyle.italic,
-                                color: Colors.grey,
-                                fontSize: 14,
-                              ),
-                            ),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          ctrl.addRoleSkill();
+                          _roleControllers.add(TextEditingController());
+                          _descriptionControllers.add(TextEditingController());
+                          _skillControllers.add(TextEditingController());
+                          setState(() {});
+                        },
+                        icon: const Icon(Icons.add_circle_outline, size: 18),
+                        label: const Text('Ajouter un rôle'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: accentColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
                           ),
-
-                        // Liste des rôles et compétences
-                        ...List.generate(state.chosenRoles.length, (index) {
-                          // final roleSkill = state.project.roleSkills[index];
-                          return _roleItemWidget(index);
-                        }),
-
-                        // Bouton de soumission
-                        const SizedBox(height: 24),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 56,
-                          child: ElevatedButton(
-                            onPressed:
-                                state.isSubmitting ? null : ctrl.onSubmit,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryOrange,
-                              foregroundColor: Colors.white,
-                              disabledBackgroundColor: lightOrange,
-                            ),
-                            child:
-                                state.isSubmitting
-                                    ? const CircularProgressIndicator(
-                                      color: Colors.white,
-                                    )
-                                    : const Text(
-                                      'Créer le Projet',
-                                      style: TextStyle(fontSize: 18),
-                                    ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
                           ),
                         ),
-                        const SizedBox(height: 32),
-                      ],
+                      ),
+                    ],
+                  ),
+                  if (state.chosenRoles.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Text(
+                        'Aucun rôle ajouté. Cliquez sur le bouton ci-dessus pour ajouter un rôle.',
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: darkGray,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  ...List.generate(state.chosenRoles.length, (index) => _roleItemWidget(index)),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: state.isSubmitting ? null : ctrl.onSubmit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accentColor,
+                        foregroundColor: Colors.white,
+                        disabledBackgroundColor: accentColor.withOpacity(0.5),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: state.isSubmitting
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text('Créer le Projet', style: TextStyle(fontSize: 18)),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 32),
+                ],
               ),
-
-          // Messages flottants (Toast)
+            ),
+          ),
           if (state.successMessage != null)
             Positioned(
               top: 16,
               right: 16,
-              child: Material(
-                elevation: 6,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: veryLightOrange,
-                    border: Border.all(color: lightOrange),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.check_circle, color: primaryOrange),
-                      const SizedBox(width: 8),
-                      Text(
-                        state.successMessage!,
-                        style: TextStyle(color: primaryOrange),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: ctrl.clearSuccess,
-                        child: Icon(
-                          Icons.close,
-                          color: primaryOrange,
-                          size: 18,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              child: SuccessMessage(
+                message: state.successMessage!,
+                onDismiss: ctrl.clearSuccess,
               ),
             ),
-
           if (state.formError != null)
             Positioned(
               bottom: 16,
               right: 16,
-              child: Material(
-                elevation: 6,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade100,
-                    border: Border.all(color: Colors.red.shade500),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.error_outline, color: Colors.red.shade700),
-                      const SizedBox(width: 8),
-                      Text(
-                        state.formError!,
-                        style: TextStyle(color: Colors.red.shade700),
-                      ),
-                      const SizedBox(width: 8),
-                      GestureDetector(
-                        onTap: ctrl.clearError,
-                        child: Icon(
-                          Icons.close,
-                          color: Colors.red.shade700,
-                          size: 18,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              child: ErrorMessage(
+                message: state.formError!,
+                onDismiss: ctrl.clearError,
               ),
             ),
         ],
@@ -480,14 +298,14 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   Widget _titleField() {
     final ctrl = ref.read(createProjectCtrlProvider.notifier);
     final state = ref.watch(createProjectCtrlProvider);
-
     return FormFields(
       label: 'Titre',
       isRequired: true,
-      labelColor: Colors.black,
+      labelColor: primaryColor,
       child: TextFormField(
         controller: _titleController,
         decoration: _getInputDecoration('Entrez le titre du projet'),
+        style: TextStyle(color: primaryColor),
         onChanged: ctrl.updateTitle,
         validator: (value) {
           if (state.formSubmitted && (value == null || value.isEmpty)) {
@@ -502,14 +320,14 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   Widget _descriptionField() {
     final state = ref.watch(createProjectCtrlProvider);
     final ctrl = ref.read(createProjectCtrlProvider.notifier);
-
     return FormFields(
       label: 'Description',
       isRequired: true,
-      labelColor: Colors.black,
+      labelColor: primaryColor,
       child: TextFormField(
         controller: _descriptionController,
         maxLines: 4,
+        style: TextStyle(color: primaryColor),
         decoration: _getInputDecoration('Décrivez votre projet'),
         onChanged: ctrl.updateDescription,
         validator: (value) {
@@ -525,32 +343,31 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   Widget _startDateField() {
     final ctrl = ref.read(createProjectCtrlProvider.notifier);
     final state = ref.watch(createProjectCtrlProvider);
-
     return FormFields(
       label: 'Date de début',
       isRequired: true,
-      labelColor: Colors.black,
+      labelColor: primaryColor,
       child: InkWell(
         onTap: () => _selectDate(context, true),
         child: InputDecorator(
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: lightOrange),
+              borderSide: BorderSide(color: mediumGray),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: lightOrange),
+              borderSide: BorderSide(color: mediumGray),
             ),
-            suffixIcon: Icon(Icons.calendar_today, color: primaryOrange),
-            errorText:
-                state.formSubmitted && !state.hasValidDateRange
-                    ? 'Date invalide'
-                    : null,
-            fillColor: Colors.white,
+            suffixIcon: Icon(Icons.calendar_today, color: accentColor),
+            errorText: state.formSubmitted && !state.hasValidDateRange ? 'Date invalide' : null,
+            fillColor: cardBackground,
             filled: true,
           ),
-          child: Text(DateFormat('dd/MM/yyyy').format(state.project.dateStart)),
+          child: Text(
+            DateFormat('dd/MM/yyyy').format(state.project.dateStart),
+            style: TextStyle(color: primaryColor),
+          ),
         ),
       ),
     );
@@ -562,28 +379,30 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
     return FormFields(
       label: 'Date de fin',
       isRequired: true,
-      labelColor:Colors.black,
+      labelColor: primaryColor,
       child: InkWell(
         onTap: () => _selectDate(context, false),
         child: InputDecorator(
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: lightOrange),
+              borderSide: BorderSide(color: mediumGray),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: lightOrange),
+              borderSide: BorderSide(color: mediumGray),
             ),
-            suffixIcon: Icon(Icons.calendar_today, color: primaryOrange),
-            errorText:
-                state.formSubmitted && !state.hasValidDateRange
-                    ? 'La date de fin doit être postérieure ou égale à la date de début'
-                    : null,
-            fillColor: Colors.white,
+            suffixIcon: Icon(Icons.calendar_today, color: accentColor),
+            errorText: state.formSubmitted && !state.hasValidDateRange
+                ? 'La date de fin doit être postérieure ou égale à la date de début'
+                : null,
+            fillColor: cardBackground,
             filled: true,
           ),
-          child: Text(DateFormat('dd/MM/yyyy').format(state.project.dateEnd)),
+          child: Text(
+            DateFormat('dd/MM/yyyy').format(state.project.dateEnd),
+            style: TextStyle(color: primaryColor),
+          ),
         ),
       ),
     );
@@ -592,19 +411,16 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   Widget _budgetField() {
     final ctrl = ref.read(createProjectCtrlProvider.notifier);
     final state = ref.watch(createProjectCtrlProvider);
-
     return FormFields(
       label: "Budget",
       isRequired: true,
-      labelColor: Colors.black,
+      labelColor: primaryColor,
       child: TextFormField(
         controller: _budgetController,
         keyboardType: TextInputType.number,
+        style: TextStyle(color: primaryColor),
         decoration: _getInputDecoration('Budget').copyWith(prefixText: '€ '),
-        onChanged: (value) {
-          final budget = double.tryParse(value) ?? 0;
-          ctrl.updateBudget(budget);
-        },
+        onChanged: (value) => ctrl.updateBudget(double.tryParse(value) ?? 0),
         validator: (value) {
           if (state.formSubmitted && (value == null || value.isEmpty)) {
             return 'Le budget est requis';
@@ -618,13 +434,13 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   Widget _locationField() {
     final ctrl = ref.read(createProjectCtrlProvider.notifier);
     final state = ref.watch(createProjectCtrlProvider);
-
     return FormFields(
       label: 'Lieu',
       isRequired: true,
-      labelColor: Colors.black,
+      labelColor: primaryColor,
       child: TextFormField(
         controller: _locationController,
+        style: TextStyle(color: primaryColor),
         decoration: _getInputDecoration('Ex: Remote, Paris, etc.'),
         onChanged: ctrl.updateLocation,
         validator: (value) {
@@ -640,37 +456,28 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   Widget _visibilityField() {
     final ctrl = ref.read(createProjectCtrlProvider.notifier);
     final state = ref.watch(createProjectCtrlProvider);
-
     return FormFields(
       label: 'Visibilité',
       isRequired: true,
-      labelColor:Colors.black,
+      labelColor: primaryColor,
       child: Row(
         children: [
           Expanded(
             child: RadioListTile<String>(
-              title: const Text('Public'),
+              title: Text('Public', style: TextStyle(color: primaryColor)),
               value: 'public',
               groupValue: state.project.visibility,
-              onChanged: (value) {
-                if (value != null) {
-                  ctrl.updateVisibility(value);
-                }
-              },
-              activeColor: primaryOrange,
+              onChanged: (value) => value != null ? ctrl.updateVisibility(value) : null,
+              activeColor: accentColor,
             ),
           ),
           Expanded(
             child: RadioListTile<String>(
-              title: const Text('Privé'),
+              title: Text('Privé', style: TextStyle(color: primaryColor)),
               value: 'private',
               groupValue: state.project.visibility,
-              onChanged: (value) {
-                if (value != null) {
-                  ctrl.updateVisibility(value);
-                }
-              },
-              activeColor: primaryOrange,
+              onChanged: (value) => value != null ? ctrl.updateVisibility(value) : null,
+              activeColor: accentColor,
             ),
           ),
         ],
@@ -683,38 +490,37 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
     final state = ref.watch(createProjectCtrlProvider);
     return FormFields(
       label: 'Domaines',
-      labelColor: Colors.black,
+      labelColor: primaryColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (state.availableDomains.isEmpty)
-            const Text(
-              'Aucun domaine disponible',
-              style: TextStyle(color: Colors.grey),
-            )
+            Text('Aucun domaine disponible', style: TextStyle(color: darkGray))
           else
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children:
-                  state.availableDomains.map((domain) {
-                    final isSelected = ctrl.isDomainSelected(domain.name);
-                    return FilterChip(
-                      label: Text(domain.name),
-                      selected: isSelected,
-                      onSelected: (_) => ctrl.toggleDomain(domain.name),
-                      selectedColor: veryLightOrange,
-                      checkmarkColor: primaryOrange,
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        side: BorderSide(color: lightOrange, width: 1),
-                      ),
-                    );
-                  }).toList(),
+              children: state.availableDomains.map((domain) {
+                return FilterChip(
+                  label: Text(domain.name),
+                  selected: ctrl.isDomainSelected(domain.name),
+                  onSelected: (_) => ctrl.toggleDomain(domain.name),
+                  selectedColor: accentColor.withOpacity(0.1),
+                  checkmarkColor: accentColor,
+                  backgroundColor: cardBackground,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    side: BorderSide(color: mediumGray, width: 1),
+                  ),
+                  labelStyle: TextStyle(
+                    color: primaryColor,
+                    fontWeight: FontWeight.w500,
+                  ),
+                );
+              }).toList(),
             ),
           if (state.formSubmitted && !state.hasAtLeastOneDomain)
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 8),
               child: Text(
                 'Veuillez sélectionner au moins un domaine.',
@@ -727,27 +533,22 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   }
 
   Widget _roleItemWidget(int index) {
-    final ctrl = ref.read(createProjectCtrlProvider.notifier);
     final state = ref.watch(createProjectCtrlProvider);
-    var roleSkill = state.chosenRoles[index];
-
+    final roleSkill = state.chosenRoles[index];
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Card(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: BorderSide(color: lightOrange),
+          side: BorderSide(color: mediumGray),
         ),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Rôle et bouton de suppression
               _roleField(index),
-
-              // Description du rôle
               if (roleSkill.role.isNotEmpty) ...[
                 ..._roleDescriptionField(index),
                 ..._roleSkillsField(index),
@@ -762,53 +563,33 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   Widget _roleField(int index) {
     final ctrl = ref.read(createProjectCtrlProvider.notifier);
     final state = ref.watch(createProjectCtrlProvider);
-    var roleSkill = state.chosenRoles[index];
-
-    var _rolePopupMenu = PopupMenuButton<String>(
-      icon: Icon(Icons.arrow_drop_down, color: primaryOrange),
-      onSelected: (String value) {
-        _roleControllers[index].text = value;
-        ctrl.onRoleChange(index, value);
-      },
-      itemBuilder: (BuildContext context) {
-        return state.availableRoles.map((role) {
-          return PopupMenuItem<String>(
-            value: role.name,
-            child: Text(role.name),
-          );
-        }).toList();
-      },
-    );
-
-    var errorTextValue =
-        state.formSubmitted && roleSkill.role.isEmpty
-            ? 'Le rôle est requis'
-            : null;
-
-    var suffixIconValue =
-        state.availableRoles.isNotEmpty ? _rolePopupMenu : null;
-
+    final roleSkill = state.chosenRoles[index];
     return Row(
       children: [
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Rôle',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
+              Text('Rôle', style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor)),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _roleControllers[index],
-                decoration: _getInputDecoration(
-                  'Entrez un rôle ou sélectionnez-en un',
-                ).copyWith(
-                  errorText: errorTextValue,
-                  suffixIcon: suffixIconValue,
+                style: TextStyle(color: primaryColor),
+                decoration: _getInputDecoration('Entrez un rôle ou sélectionnez-en un').copyWith(
+                  errorText: state.formSubmitted && roleSkill.role.isEmpty ? 'Le rôle est requis' : null,
+                  suffixIcon: state.availableRoles.isNotEmpty ? PopupMenuButton<String>(
+                    icon: Icon(Icons.arrow_drop_down, color: accentColor),
+                    onSelected: (value) {
+                      _roleControllers[index].text = value;
+                      ctrl.onRoleChange(index, value);
+                    },
+                    itemBuilder: (context) => state.availableRoles.map((role) {
+                      return PopupMenuItem<String>(
+                        value: role.name,
+                        child: Text(role.name),
+                      );
+                    }).toList(),
+                  ) : null,
                 ),
                 onChanged: (value) => ctrl.onRoleChange(index, value),
               ),
@@ -826,25 +607,16 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
 
   List<Widget> _roleDescriptionField(int index) {
     final ctrl = ref.read(createProjectCtrlProvider.notifier);
-    final state = ref.watch(createProjectCtrlProvider);
-    var roleSkill = state.chosenRoles[index];
-
     return [
       const SizedBox(height: 16),
-      Text(
-        'Description du rôle',
-        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-      ),
+      Text('Description du rôle', style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor)),
       const SizedBox(height: 8),
       TextFormField(
         controller: _descriptionControllers[index],
         maxLines: 3,
-        decoration: _getInputDecoration(
-          'Décrivez les responsabilités et attentes pour ce rôle',
-        ),
-        onChanged: (value) {
-          ctrl.updateRoleDescription(index, value);
-        },
+        style: TextStyle(color: primaryColor),
+        decoration: _getInputDecoration('Décrivez les responsabilités et attentes pour ce rôle'),
+        onChanged: (value) => ctrl.updateRoleDescription(index, value),
       ),
     ];
   }
@@ -852,55 +624,36 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
   List<Widget> _roleSkillsField(int index) {
     final ctrl = ref.read(createProjectCtrlProvider.notifier);
     final state = ref.watch(createProjectCtrlProvider);
-    var roleSkill = state.chosenRoles[index];
-
-    var suffixValue =
-        state.availableSkills.isNotEmpty
-            ? PopupMenuButton<String>(
-              icon: Icon(Icons.arrow_drop_down, color: primaryOrange),
-              onSelected: (String value) {
-                if (index < _skillControllers.length) {
-                  _skillControllers[index].text = value;
-                  ctrl.updateNewSkill(index, value);
-                  _skillControllers[index].clear();
-                }
-              },
-              itemBuilder: (BuildContext context) {
-                return state.availableSkills.where((e)=>!roleSkill.skills.contains(e.name)).map((skill) {
-                  return PopupMenuItem<String>(
-                    value: skill.name,
-                    child: Text(skill.name),
-                  );
-                }).toList();
-              },
-            )
-            : null;
-
-    // if (roleSkill.role.isNotEmpty)
-
+    final roleSkill = state.chosenRoles[index];
     return [
       const SizedBox(height: 16),
-      Text(
-        'Compétences',
-        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-      ),
+      Text('Compétences', style: TextStyle(fontWeight: FontWeight.bold, color: primaryColor)),
       const SizedBox(height: 8),
-
       Row(
         children: [
           Expanded(
             child: TextFormField(
               controller: _skillControllers[index],
-              decoration: _getInputDecoration(
-                'Entrez une compétence et appuyez sur Entrée',
-              ).copyWith(suffixIcon: suffixValue),
-              onChanged: (value) {
-                // ctrl.updateNewSkill(index, value);
-              },
+              style: TextStyle(color: primaryColor),
+              decoration: _getInputDecoration('Entrez une compétence et appuyez sur Entrée').copyWith(
+                suffixIcon: state.availableSkills.isNotEmpty ? PopupMenuButton<String>(
+                  icon: Icon(Icons.arrow_drop_down, color: accentColor),
+                  onSelected: (value) {
+                    _skillControllers[index].text = value;
+                    ctrl.updateNewSkill(index, value);
+                    _skillControllers[index].clear();
+                  },
+                  itemBuilder: (context) => state.availableSkills
+                      .where((e) => !roleSkill.skills.contains(e.name))
+                      .map((skill) => PopupMenuItem<String>(
+                    value: skill.name,
+                    child: Text(skill.name),
+                  )).toList(),
+                ) : null,
+              ),
               onFieldSubmitted: (value) {
                 ctrl.updateNewSkill(index, value);
                 _skillControllers[index].clear();
-                // ctrl.addSkillToRole(index);
               },
             ),
           ),
@@ -909,47 +662,44 @@ class _ProjectFormPageState extends ConsumerState<ProjectFormPage> {
             onPressed: () {
               ctrl.updateNewSkill(index, _skillControllers[index].text);
               _skillControllers[index].clear();
-
-              // ctrl.addSkillToRole(index);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: primaryOrange,
+              backgroundColor: accentColor,
               foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             child: const Text('Ajouter'),
           ),
         ],
       ),
-
       if (roleSkill.skills.isEmpty)
-        const Text(
+        Text(
           'Aucune compétence ajoutée.',
-          style: TextStyle(
-            fontStyle: FontStyle.italic,
-            color: Colors.grey,
-            fontSize: 14,
-          ),
+          style: TextStyle(fontStyle: FontStyle.italic, color: darkGray, fontSize: 14),
         )
       else
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children:
-              roleSkill.skills.map((skill) {
-                return Chip(
-                  label: Text(skill),
-                  backgroundColor: veryLightOrange,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    side: BorderSide(color: lightOrange, width: 1),
-                  ),
-                  deleteIcon: const Icon(Icons.close, size: 18),
-                  onDeleted: () {
-                    ctrl.removeSkillFromRole(index, skill);
-                  },
-                  deleteIconColor: primaryOrange,
-                );
-              }).toList(),
+          children: roleSkill.skills.map((skill) {
+            return Chip(
+              label: Text(skill),
+              backgroundColor: accentColor.withOpacity(0.1),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: BorderSide(color: mediumGray, width: 1),
+              ),
+              deleteIcon: const Icon(Icons.close, size: 18),
+              onDeleted: () => ctrl.removeSkillFromRole(index, skill),
+              deleteIconColor: accentColor,
+              labelStyle: TextStyle(
+                color: primaryColor,
+                fontSize: 13,
+              ),
+            );
+          }).toList(),
         ),
     ];
   }

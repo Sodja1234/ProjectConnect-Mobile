@@ -1,19 +1,28 @@
-// create model class for authentication name and password with toJson and fromJson methods
+// lib/business/models/user/authentication.dart
 
 class Authentication {
-  final String? name;
-  final String? password;
+  final String email; // Rendu non-nullable car l'email est requis pour l'authentification
+  final String password; // Rendu non-nullable car le mot de passe est requis
 
-  Authentication({this.name, this.password});
+  // Constructeur avec paramètres requis
+  Authentication({
+    required this.email,
+    required this.password,
+  });
 
-  factory Authentication.fromJson(json) => Authentication(
-        name: json['name'],
-        password: json['password'],
-      );
+  // Factory constructor pour la désérialisation (from JSON)
+  factory Authentication.fromJson(Map<String, dynamic> json) {
+    return Authentication(
+      email: json['email'] as String, // Cast explicite pour la sécurité
+      password: json['password'] as String, // Cast explicite
+    );
+  }
 
-  Map toJson() => {
-        'name': name,
-        'password': password,
-      };
+  // Méthode pour la sérialisation (to JSON)
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'password': password,
+    };
+  }
 }
-

@@ -41,7 +41,7 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
       },
     ),
     GoRoute(
-      path: "/public/login",
+      path: "/public/auth/login",
       name: 'login_page',
       builder: (ctx, state) {
         return LoginPage();

@@ -4,16 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart'; // Importez Riverpod
 import 'package:odc_mobile_template/business/models/user/authentication.dart';
 import 'package:odc_mobile_template/business/models/user/user.dart';
 import 'package:odc_mobile_template/business/services/user/userNetworkService.dart';
-import 'package:odc_mobile_template/main.dart'; // Pour getIt
-import 'package:odc_mobile_template/utils/http/HttpRequestException.dart'; // Pour la gestion des erreurs API
+import 'package:odc_mobile_template/main.dart';
+import 'package:odc_mobile_template/utils/http/HttpRequestException.dart';
+import '../intro/appCtrl.dart';
 import 'login_state.dart';
 
 class LoginController extends StateNotifier<LoginState> {
   // L'instance du service réseau, récupérée via getIt
   final UserNetworkService _userNetworkService = getIt<UserNetworkService>();
+  final Ref _ref; // <-- Add a Ref dependency
 
-  // Constructeur du contrôleur. Initialise l'état.
-  LoginController()
+  LoginController(this._ref)
       : super(LoginState(
     isPasswordVisible: false,
     isLoading: false,
@@ -21,10 +22,9 @@ class LoginController extends StateNotifier<LoginState> {
     emailController: TextEditingController(),
     passwordController: TextEditingController(),
     formKey: GlobalKey<FormState>(),
-    error: null, // Initialiser l'erreur
+    error: null,
   ));
 
-  // Getters pour accéder aux propriétés de l'état (utilisez state.propriete)
   bool get isPasswordVisible => state.isPasswordVisible;
   bool get isLoading => state.isLoading;
   bool get rememberMe => state.rememberMe;
@@ -49,7 +49,7 @@ class LoginController extends StateNotifier<LoginState> {
     state = state.copyWith(error: null);
 
     if (state.formKey.currentState!.validate()) {
-      state = state.copyWith(isLoading: true); // Active l'indicateur de chargement.
+      state = state.copyWith(isLoading: true);
 
       try {
         final User user = await _userNetworkService.seConnecter(
@@ -59,6 +59,13 @@ class LoginController extends StateNotifier<LoginState> {
           ),
         );
 
+        _ref.read(appCtrlProvider.notifier).setUser(user);
+
+        if (state.rememberMe) {
+          _ref.read(appCtrlProvider.notifier).userLocalService.enregistrerUser(user);
+        }
+
+        // The navigation will be handled by the LoginPage via ref.listen
       } catch (e) {
         String errorMessage;
         if (e is HttpRequestException) {
@@ -82,6 +89,5 @@ class LoginController extends StateNotifier<LoginState> {
   }
 }
 
-// Fournisseur Riverpod pour le LoginController
-final loginCtrlProvider = StateNotifierProvider<LoginController, LoginState>((ref) => LoginController());
+final loginCtrlProvider = StateNotifierProvider<LoginController, LoginState>((ref) => LoginController(ref));
 

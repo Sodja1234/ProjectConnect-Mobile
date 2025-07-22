@@ -28,4 +28,10 @@ class UserLocalServiceImpl implements UserLocalService {
     await box?.deleteData("USER_KEY");
     return true;
   }
+
+  @override
+  Future<void> enregistrerUser( User user) {
+    // TODO: implement enregistrerUser
+    throw UnimplementedError();
+  }
 }

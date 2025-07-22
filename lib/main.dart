@@ -31,7 +31,7 @@ void configureImplementations() {
   var httpUtils = RemoteHttpUtils();
   var baseUrl = dotenv.env['BASE_URL'] ?? '';
   var localManager=GetStorageImpl();
-  
+
   getIt.registerLazySingleton<NavigationUtils>(() => NavigationUtils());
   getIt.registerLazySingleton<GestionNetworkService>(() => GestionNetworkServiceImpl(baseUrl: baseUrl, httpUtils: httpUtils));
   getIt.registerLazySingleton<GestionLocalService>(() => GestionLocalServiceImpl());
@@ -42,6 +42,7 @@ void configureImplementations() {
   getIt.registerLazySingleton<SkillNetworkService>(() => SkillNetworkServiceImpl(baseUrl: baseUrl, httpUtils: httpUtils));
 
   getIt.registerLazySingleton<UserLocalService>(() => UserLocalServiceImpl(box: localManager));
+  //getIt.registerLazySingleton<UserNetworkService>(() => UserNetworkServiceImpl(baseUrl: baseUrl, httpUtils: httpUtils));
 }
 
 void main() async {
@@ -58,4 +59,9 @@ void main() async {
   configureImplementations();
 
   runApp(ProviderScope(child: MonApplication()));
+}
+
+
+class bottomNavBarNavigation{
+
 }

@@ -39,17 +39,21 @@ class UserNetworkServiceImpl extends UserNetworkService {
   }
 
   @override
-  Future<void> resendOtp(VerifyOtp resendOtp) {
-    // TODO: implement resendOtp
-    throw UnimplementedError();
+  Future<void> resendOtp(VerifyOtp resendOtp) async {
+    var url = '$baseUrl/verify-otp';
+    var body =resendOtp.toJson();
+    var response = await httpUtils.postData(url,body: body);
+    print(response);
+    return;
   }
 
   @override
   Future<void> verifyOtp(VerifyOtp verifyOtp) async {
-    var url = '$baseUrl/verify-otp';
+    var url = '$baseUrl/resend-otp';
     var body = verifyOtp.toJson();
     var response = await httpUtils.postData(url, body : body);
     print(response);
+    print(url);
     return ;
 
   }

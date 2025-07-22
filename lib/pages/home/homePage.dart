@@ -42,12 +42,6 @@ class _HomePageState extends ConsumerState<HomePage> {
     var state = ref.watch(homeCtrlProvider);
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: () {
-            navigation.pop();
-          },
-          icon: Icon(Icons.arrow_back),
-        ),
         title: Text('Articles (${state.articles?.length ?? 0})'),
         actions: [
           IconButton(

@@ -6,17 +6,18 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:odc_mobile_template/business/models/user/registerUser.dart';
+
 import 'package:odc_mobile_template/business/models/user/verifyOtp.dart';
-import 'package:odc_mobile_template/business/models/user/authentication.dart';
-import 'package:odc_mobile_template/business/models/user/user.dart';
+
+import '../../business/models/user/authentication.dart';
+
+import '../../business/models/user/user.dart';
+
 import '../../business/services/user/userNetworkService.dart';
 import '../../utils/http/HttpUtils.dart';
+import '../utils/http/localHttpUtils.dart';
 import '../../utils/http/HttpRequestException.dart';
 import '../../utils/remoteHttpUtils.dart';
-//import '../../utils/remoteHttpUtils.dart';
-// Note: remoteHttpUtils.dart n'est pas directement utilisé ici mais via l'injection HttpUtils
-// import '../../utils/remoteHttpUtils.dart'; // Vous avez déjà cette ligne, assurez-vous que c'est le bon chemin
-
 class UserNetworkServiceImpl extends UserNetworkService {
   final String baseUrl;
   final HttpUtils httpUtils;
@@ -69,33 +70,20 @@ class UserNetworkServiceImpl extends UserNetworkService {
 
   // @override
   Future<void> registerUser(RegisterUser registerUser) async {
-  //   final url = '$baseUrl/register';
-  //   final body = registerUser.toJson();
-  //   try {
-  //     final dynamic responseData = await httpUtils.postData(url, body: body);
-  //     // Laravel renvoie souvent { "data": { "user_id": ..., "message": "..." } } pour l'enregistrement
-  //     // ou juste un message de succès. Adaptez cette logique si votre API renvoie autre chose.
-  //     if (responseData is Map<String, dynamic> && responseData.containsKey('data')) {
-  //       // Si votre API retourne l'utilisateur enregistré, vous pouvez le parser ici
-  //       // User.fromJson(responseData['data']);
-  //       print('Registration successful: ${responseData['data']}');
-  //     } else if (responseData is Map<String, dynamic> && responseData.containsKey('message')) {
-  //       print('Registration successful: ${responseData['message']}');
-  //     } else {
-  //       print('Registration successful with unknown response format: $responseData');
-  //     }
-  //     return;
-  //   } on HttpRequestException catch (e) {
-  //     throw e;
-  //   } catch (e) {
-  //     throw Exception('Erreur inattendue lors de l\'enregistrement: $e');
-  //   }
-   }
+   var url = '$baseUrl/register/';
+   var body = registerUser.toJson();
+   var response = await httpUtils.postData(url,body: body);
+   print(response);
+   return;
+  }
 
   @override
-  Future<void> resendOtp(VerifyOtp resendOtp) {
-    // TODO: implement resendOtp
-    throw UnimplementedError();
+  Future<void> resendOtp(VerifyOtp resendOtp) async {
+    var url = '$baseUrl/verify-otp';
+    var body =resendOtp.toJson();
+    var response = await httpUtils.postData(url,body: body);
+    print(response);
+    return;
   }
 
   @override
@@ -117,6 +105,7 @@ class UserNetworkServiceImpl extends UserNetworkService {
       throw Exception('Erreur inattendue lors de la vérification OTP: $e');
     }
   }
+
 
 
 

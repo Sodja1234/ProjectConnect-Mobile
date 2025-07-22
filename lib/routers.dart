@@ -10,6 +10,7 @@ import 'pages/intro/introPage.dart';
 import 'utils/navigationUtils.dart';
 import './main.dart';
 import 'pages/home/homePage.dart';
+import 'pages/login/login_screen.dart';
 
 final routerConfigProvider = Provider<GoRouter>((ref) {
   final navigatorKey = getIt<NavigationUtils>().navigatorKey;
@@ -17,6 +18,13 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
    routes restreintes
   */
   final authRoutes = [
+    GoRoute(
+      path: "/public/create/project",
+      name: 'create_project_page',
+      builder: (ctx, state) {
+        return ProjectFormPage();
+      },
+    ),
 
 
   ];
@@ -33,12 +41,13 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
       },
     ),
     GoRoute(
-      path: "/public/create/project",
-      name: 'create_project_page',
+      path: "/public/login",
+      name: 'login_page',
       builder: (ctx, state) {
-        return ProjectFormPage();
+        return LoginPage();
       },
     ),
+
     GoRoute(
       path: "/public/home",
       name: 'home_page',
@@ -67,26 +76,30 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
 CONFIGURATION  DES ROUTES
 */
   return GoRouter(
-    navigatorKey: navigatorKey,
-    debugLogDiagnostics: true,
-    initialLocation: "/public/intro",
-    redirect: (context, state) {
-      var appState = ref.watch(appCtrlProvider);
-      var user = appState.user;
+  navigatorKey: navigatorKey,
+  debugLogDiagnostics: true,
+  initialLocation: "/public/login", // <-- C'est ici que nous changeons la page de démarrage
+  redirect: (context, state) {
+  var appState = ref.watch(appCtrlProvider);
+  var user = appState.user;
 
-      // redirection vers la page d'accueil si l'utilisateur est connecté
-      if (user != null && state.matchedLocation.startsWith("/public")) {
-        return "/app/home";
-      }
+  // Si l'utilisateur est connecté et essaie d'accéder à une route publique (comme login ou intro),
+  // redirigez-le vers la page d'accueil de l'application.
+  if (user != null && state.matchedLocation.startsWith("/public")) {
+  return "/app/home";
+  }
 
-      // redirection vers la page d'intro si l'utilisateur n'est pas connecté
-      /*if (user == null && state.matchedLocation.startsWith("/app")) {
-        return "/public/intro";
-      }*/
+  // Si l'utilisateur n'est PAS connecté et essaie d'accéder à une route authentifiée ('/app'),
+  // redirigez-le vers la page de connexion, SAUF s'il est déjà sur la page de connexion.
+  if (user == null && state.matchedLocation.startsWith("/app")) {
+  if (state.matchedLocation != "/public/login") { // Éviter la boucle de redirection
+  return "/public/login";
+  }
+  }
 
-      return null;
-    },
-    routes: [...noAuthRoutes, ...authRoutes],
-    errorBuilder: (context, state) => const NotFoundPage(),
+  return null; // Pas de redirection nécessaire
+  },
+  routes: [...noAuthRoutes, ...authRoutes],
+  errorBuilder: (context, state) => const NotFoundPage(),
   );
 });

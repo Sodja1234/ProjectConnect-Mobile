@@ -2,19 +2,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:odc_mobile_template/pages/auth/register/registerUserPage.dart';
+import 'package:odc_mobile_template/pages/auth/verifyOtp/verifyOtpPage.dart';
 import 'package:odc_mobile_template/pages/createProject/createProjectPage.dart';
 import 'package:odc_mobile_template/pages/listProject/listProjectPage.dart';
 import 'package:odc_mobile_template/widget/app_shell.dart';
 import 'pages/404/not_found_page.dart';
-import 'pages/intro/appCtrl.dart'; // Gardez cet import !
+import 'pages/intro/appCtrl.dart';
 import 'pages/intro/introPage.dart';
 import 'utils/navigationUtils.dart';
-import './main.dart'; // Gardez cet import pour `getIt`
+import './main.dart';
 import 'pages/home/homePage.dart';
 import 'pages/login/login_screen.dart';
-
-// Importez votre nouveau AppShell
-//import 'widgets/app_shell.dart';
 
 final routerConfigProvider = Provider<GoRouter>((ref) {
   final navigatorKey = getIt<NavigationUtils>().navigatorKey;
@@ -75,7 +73,7 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: "/public/login",
+        path: "/public/auth/login",
         name: 'login_page',
         builder: (ctx, state) {
           return LoginPage();
@@ -95,12 +93,12 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
             return RegisterUserPage();
           }),
       //route verifyOtp
-      // GoRoute(
-      //     path: "/public/auth/verifyOtp",
-      //     name: "verify_otp_page",
-      //     builder: (ctx, state){
-      //       return VerifyOtpPage();
-      //     }),
+      GoRoute(
+          path: "/public/auth/verifyOtp",
+          name: "verify_otp_page",
+          builder: (ctx, state){
+            return VerifyOtpPage();
+          }),
 
       // --- SHELL ROUTE pour les routes authentifiées (AVEC BottomNavigationBar) ---
       ShellRoute(

@@ -39,7 +39,7 @@ class UserNetworkServiceImpl extends UserNetworkService {
   }
 
   @override
-  Future<void> resendOtp(VerifyOtp resendOtp) async {
+  Future<void> verifyOtp(VerifyOtp resendOtp) async {
     var url = '$baseUrl/verify-otp';
     var body =resendOtp.toJson();
     var response = await httpUtils.postData(url,body: body);
@@ -48,7 +48,7 @@ class UserNetworkServiceImpl extends UserNetworkService {
   }
 
   @override
-  Future<void> verifyOtp(VerifyOtp verifyOtp) async {
+  Future<void> resendOtp(VerifyOtp verifyOtp) async {
     var url = '$baseUrl/resend-otp';
     var body = verifyOtp.toJson();
     var response = await httpUtils.postData(url, body : body);
@@ -61,6 +61,7 @@ class UserNetworkServiceImpl extends UserNetworkService {
 
 
 
+
   }
 void main() async {
   //test register
@@ -69,6 +70,7 @@ void main() async {
     httpUtils: LocalHttpUtils(),
   );
   try{
+
     var data=VerifyOtp(email:'email@gmail.com',otp: '170400');
     var r=await service.verifyOtp(data);
     print(data);

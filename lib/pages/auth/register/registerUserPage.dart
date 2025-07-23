@@ -13,16 +13,6 @@ class RegisterUserPage extends ConsumerStatefulWidget {
 }
 
 class _RegisterUserPageState extends ConsumerState<RegisterUserPage> {
-  // Couleurs modernisées
-  final Color primaryColor = const Color(0xFF1A1A1A);
-  final Color accentColor = const Color(0xFFFF6B35);
-  final Color lightBackground = const Color(0xFFF8F9FA);
-  final Color inputBackground = Colors.white;
-  final Color borderColor = const Color(0xFFE0E0E0);
-  final Color hintColor = const Color(0xFF9E9E9E);
-  final Color errorColor = const Color(0xFFE53935);
-  final Color successColor = const Color(0xFF43A047);
-
   final _formKey = GlobalKey<FormState>();
   final NavigationUtils navigation = getIt.get<NavigationUtils>();
 
@@ -47,176 +37,213 @@ class _RegisterUserPageState extends ConsumerState<RegisterUserPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(RegisterUserCtrlProvider);
-    final isSubmited = state.isSubmited;
 
     return Scaffold(
-      backgroundColor: lightBackground,
+      backgroundColor: const Color(0xFFF8F9FA), // Fond clair
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
+          child: Container(
+            height: MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo/Header
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  padding: const EdgeInsets.all(16),
+                // Header avec logo
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
                   child: Column(
                     children: [
-                      Icon(Icons.account_circle,
-                          size: 64,
-                          color: accentColor),
-                      const SizedBox(height: 16),
-                      Text(
+                      // Logo container avec votre logo
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFFFF6B00), // Orange de votre logo
+                              const Color(0xFFFF8533),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFF6B00).withOpacity(0.3),
+                              blurRadius: 20,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
+                        ),
+                        child: Image.asset( // <-- Changed to Image.asset
+                          'assets/orange_logo.png',
+                          width: 40,
+                          height: 40,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      const Text(
                         'Créer un compte',
                         style: TextStyle(
-                          fontSize: 24,
+                          color: Color(0xFF1A1A1A), // Texte sombre
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
-                          color: primaryColor,
+                          letterSpacing: -0.5,
                         ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Rejoignez notre communauté',
                         style: TextStyle(
-                          fontSize: 14,
-                          color: hintColor,
+                          color: Colors.grey.shade600, // Gris plus sombre
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 32),
-
                 // Formulaire
-                Material(
-                  elevation: 2,
-                  borderRadius: BorderRadius.circular(16),
-                  color: Colors.white,
-                  child: Padding(
+                Expanded(
+                  child: Container(
                     padding: const EdgeInsets.all(24),
+                    decoration: const BoxDecoration(
+                      color: Colors.white, // Fond blanc
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(32),
+                        topRight: Radius.circular(32),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Color(0x0A000000),
+                          blurRadius: 10,
+                          offset: Offset(0, -2),
+                        ),
+                      ],
+                    ),
                     child: Form(
                       key: _formKey,
                       autovalidateMode: AutovalidateMode.onUserInteraction,
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
+                          const SizedBox(height: 16),
+
                           // Messages d'état
                           if (state.errorMessage != null)
                             _buildMessageCard(
                               state.errorMessage!,
                               Icons.error_outline,
-                              errorColor,
+                              Colors.red.shade600,
+                              true,
                             ),
-
                           if (state.successMessage != null)
                             _buildMessageCard(
                               state.successMessage!,
                               Icons.check_circle_outline,
-                              successColor,
+                              Colors.green.shade600,
+                              false,
                             ),
 
-                          const SizedBox(height: 16),
-
-                          // Nom
-                          TextFormField(
+                          // Champ Nom
+                          _buildModernTextField(
                             controller: _nameCtrl,
-                            decoration: _modernInputDecoration(
-                              label: 'Nom complet',
-                              hint: 'John Doe',
-                              icon: Icons.person_outline,
-                            ),
+                            label: 'Nom complet',
+                            icon: Icons.person_outline,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return "Veuillez entrer votre nom";
+                                return 'Veuillez entrer votre nom';
                               }
                               return null;
                             },
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
 
-                          // Email
-                          TextFormField(
+                          // Champ Email
+                          _buildModernTextField(
                             controller: _emailCtrl,
+                            label: 'Adresse email',
+                            icon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: _modernInputDecoration(
-                              label: 'Adresse email',
-                              hint: 'exemple@mail.com',
-                              icon: Icons.email_outlined,
-                            ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return "Veuillez entrer votre email";
+                                return 'Veuillez entrer votre email';
                               }
-                              final emailRegex = RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
-                              if (!emailRegex.hasMatch(value.trim())) {
-                                return "Email invalide";
+                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value.trim())) {
+                                return 'Veuillez entrer un email valide';
                               }
                               return null;
                             },
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
 
-                          // Mot de passe
-                          TextFormField(
+                          // Champ Mot de passe
+                          _buildModernTextField(
                             controller: _passwordCtrl,
+                            label: 'Mot de passe',
+                            icon: Icons.lock_outline,
                             obscureText: _obscurePassword,
-                            decoration: _modernPasswordInputDecoration(
-                              label: 'Mot de passe',
-                              hint: '••••••',
-                              obscure: _obscurePassword,
-                              onToggle: () {
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                color: Colors.grey.shade600,
+                              ),
+                              onPressed: () {
                                 setState(() => _obscurePassword = !_obscurePassword);
                               },
                             ),
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
-                                return "Veuillez entrer un mot de passe";
+                                return 'Veuillez entrer un mot de passe';
                               }
                               if (value.length < 6) {
-                                return "Au moins 6 caractères";
+                                return 'Le mot de passe doit contenir au moins 6 caractères';
                               }
                               return null;
                             },
                           ),
 
-                          const SizedBox(height: 16),
+                          const SizedBox(height: 20),
 
-                          // Confirmation mot de passe
-                          TextFormField(
+                          // Champ Confirmation mot de passe
+                          _buildModernTextField(
                             controller: _confirmPasswordCtrl,
+                            label: 'Confirmer le mot de passe',
+                            icon: Icons.lock_outline,
                             obscureText: _obscureConfirmPassword,
-                            decoration: _modernPasswordInputDecoration(
-                              label: 'Confirmer le mot de passe',
-                              hint: '••••••',
-                              obscure: _obscureConfirmPassword,
-                              onToggle: () {
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirmPassword
+                                    ? Icons.visibility_outlined
+                                    : Icons.visibility_off_outlined,
+                                color: Colors.grey.shade600,
+                              ),
+                              onPressed: () {
                                 setState(() => _obscureConfirmPassword = !_obscureConfirmPassword);
                               },
                             ),
                             validator: (value) {
                               if (value != _passwordCtrl.text) {
-                                return "Les mots de passe ne correspondent pas";
+                                return 'Les mots de passe ne correspondent pas';
                               }
                               return null;
                             },
                           ),
 
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 32),
 
                           // Bouton d'inscription
-                          SizedBox(
-                            width: double.infinity,
-                            height: 50,
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            height: 56,
                             child: ElevatedButton(
                               onPressed: state.isSubmited == true
                                   ? null
                                   : () async {
                                 FocusScope.of(context).unfocus();
-
                                 if (_formKey.currentState!.validate()) {
                                   final newUser = RegisterUser(
                                     name: _nameCtrl.text.trim(),
@@ -224,9 +251,7 @@ class _RegisterUserPageState extends ConsumerState<RegisterUserPage> {
                                     password: _passwordCtrl.text,
                                     password_confirmation: _confirmPasswordCtrl.text,
                                   );
-
                                   final result = await ref.read(RegisterUserCtrlProvider.notifier).register(newUser);
-
                                   if (result == true) {
                                     Future.delayed(const Duration(seconds: 2), (){
                                       navigation.replace('/public/auth/verifyOtp');
@@ -235,28 +260,46 @@ class _RegisterUserPageState extends ConsumerState<RegisterUserPage> {
                                 }
                               },
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: accentColor,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                                backgroundColor: const Color(0xFFFF6B00),
+                                foregroundColor: Colors.white,
                                 elevation: 0,
+                                shadowColor: const Color(0xFFFF6B00).withOpacity(0.3),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ).copyWith(
+                                elevation: MaterialStateProperty.resolveWith<double>(
+                                      (Set<MaterialState> states) {
+                                    if (states.contains(MaterialState.pressed)) {
+                                      return 8;
+                                    }
+                                    return 4;
+                                  },
+                                ),
                               ),
                               child: state.isSubmited == true
-                                  ? const CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
+                                  ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
                               )
                                   : const Text(
                                 'S\'inscrire',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
                             ),
                           ),
 
                           const SizedBox(height: 24),
+
+                          const Spacer(),
 
                           // Lien vers connexion
                           Row(
@@ -265,18 +308,20 @@ class _RegisterUserPageState extends ConsumerState<RegisterUserPage> {
                               Text(
                                 'Déjà un compte ? ',
                                 style: TextStyle(
-                                  color: hintColor,
+                                  color: Colors.grey.shade600,
+                                  fontSize: 15,
                                 ),
                               ),
-                              InkWell(
-                                onTap: () {
+                              TextButton(
+                                onPressed: () {
                                   ref.read(RegisterUserCtrlProvider.notifier).resetMessages();
-                                  navigation.replace('/public/auth/loginPage');
+                                  navigation.replace('/public/login');
                                 },
-                                child: Text(
+                                child: const Text(
                                   'Se connecter',
                                   style: TextStyle(
-                                    color: accentColor,
+                                    color: Color(0xFFFF6B00),
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -296,10 +341,11 @@ class _RegisterUserPageState extends ConsumerState<RegisterUserPage> {
     );
   }
 
-  Widget _buildMessageCard(String message, IconData icon, Color color) {
-    return Container(
+  Widget _buildMessageCard(String message, IconData icon, Color color, bool isError) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
       width: double.infinity,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: color.withOpacity(0.1),
@@ -309,15 +355,19 @@ class _RegisterUserPageState extends ConsumerState<RegisterUserPage> {
       child: Row(
         children: [
           Icon(icon, color: color, size: 20),
-          const SizedBox(width: 8),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
-              style: TextStyle(color: color),
+              style: TextStyle(
+                color: color,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           IconButton(
-            icon: Icon(Icons.close, size: 16, color: color),
+            icon: Icon(Icons.close, size: 18, color: color),
             onPressed: () {
               ref.read(RegisterUserCtrlProvider.notifier).resetMessages();
             },
@@ -329,69 +379,118 @@ class _RegisterUserPageState extends ConsumerState<RegisterUserPage> {
     );
   }
 
-  InputDecoration _modernInputDecoration({
+  Widget _buildModernTextField({
+    required TextEditingController controller,
     required String label,
-    required String hint,
     required IconData icon,
+    bool obscureText = false,
+    Widget? suffixIcon,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
   }) {
-    return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      hintStyle: TextStyle(color: hintColor),
-      labelStyle: TextStyle(color: primaryColor),
-      filled: true,
-      fillColor: inputBackground,
-      prefixIcon: Icon(icon, color: hintColor),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: borderColor, width: 1),
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      validator: validator,
+      style: const TextStyle(
+        color: Color(0xFF1A1A1A), // Texte sombre
+        fontSize: 16,
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: borderColor, width: 1),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: TextStyle(
+          color: Colors.grey.shade600,
+          fontSize: 16,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: Colors.grey.shade600,
+          size: 22,
+        ),
+        suffixIcon: suffixIcon,
+        filled: true,
+        fillColor: Colors.grey.shade50, // Fond très clair
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Colors.grey.shade300,
+            width: 1,
+          ),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Colors.grey.shade300,
+            width: 1,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(
+            color: Color(0xFFFF6B00),
+            width: 2,
+          ),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Colors.red.shade400,
+            width: 1,
+          ),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(
+            color: Colors.red.shade400,
+            width: 2,
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 20,
+        ),
+        errorStyle: TextStyle(
+          color: Colors.red.shade400,
+          fontSize: 13,
+        ),
       ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: accentColor, width: 1.5),
-      ),
-      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
     );
   }
 
-  InputDecoration _modernPasswordInputDecoration({
+  Widget _buildSocialButton({
+    required IconData icon,
     required String label,
-    required String hint,
-    required bool obscure,
-    required VoidCallback onToggle,
+    required VoidCallback onPressed,
   }) {
-    return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      hintStyle: TextStyle(color: hintColor),
-      labelStyle: TextStyle(color: primaryColor),
-      filled: true,
-      fillColor: inputBackground,
-      prefixIcon: Icon(Icons.lock_outline, color: hintColor),
-      suffixIcon: IconButton(
+    return Container(
+      height: 50,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
         icon: Icon(
-          obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-          color: hintColor,
+          icon,
+          color: Colors.grey.shade700, // Icône sombre
+          size: 20,
         ),
-        onPressed: onToggle,
+        label: Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey.shade700, // Texte sombre
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(
+            color: Colors.grey.shade300, // Bordure claire
+            width: 1,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          backgroundColor: Colors.grey.shade50, // Fond très clair
+        ),
       ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: borderColor, width: 1),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: borderColor, width: 1),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: accentColor, width: 1.5),
-      ),
-      contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
     );
   }
 }

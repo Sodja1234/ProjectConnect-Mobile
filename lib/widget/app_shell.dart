@@ -10,14 +10,12 @@ import 'package:odc_mobile_template/pages/listProject/listProjectPage.dart';
 //import 'package:odc_mobile_template/pages/createProject/createProjectPage.dart';
 
 // --- Définition des couleurs directement ici ---
-// Il est généralement recommandé de les mettre dans un fichier séparé pour la réutilisabilité,
-// mais pour une intégration directe comme demandé, elles sont ici.
 const Color primaryColor = Color(0xFF1A1A1A);
 const Color accentColor = Color(0xFFFF6B35);
 const Color lightGray = Color(0xFFF8F9FA);
 const Color mediumGray = Color(0xFFE9ECEF);
 const Color darkGray = Color(0xFF6C757D);
-const Color cardBackground = Colors.white; // C'est déjà Color(0xFFFFFFFF)
+const Color cardBackground = Colors.white;
 
 class AppShell extends StatefulWidget {
   final Widget child; // Le contenu de la route actuelle
@@ -36,13 +34,14 @@ class AppShell extends StatefulWidget {
 class _AppShellState extends State<AppShell> {
   // Ces routes doivent correspondre EXACTEMENT aux chemins de vos GoRoute enfants dans ShellRoute.
   // L'ordre est important car il correspond à l'ordre des BottomNavigationBarItem.
-  // Nous utilisons ici vos pages existantes pour les onglets.
+  // J'ai ajusté l'ordre ici pour correspondre aux labels de la BottomNavigationBar
+  // et aux routes les plus logiques (Accueil -> /app/home, Projets -> /app/projects).
   final List<String> _routes = [
-    '/app/projects',              // 0: Accueil (HomePage pour vos articles)
-    '/app/home',          // 1: Projets (ListProjectPage pour la liste des projets)
-    '/app/create/project',    // 2: Créer (ProjectFormPage, accessible via push)
-    '/app/notifications',     // 3: Notifications (page simple, à implémenter si ce n'est pas déjà fait)
-    '/app/jobs',              // 4: Emplois (page simple, à implémenter si ce n'est pas déjà fait)
+    '/app/home',              // 0: Accueil
+    '/app/projects',          // 1: Projets
+    '/app/create/project',    // 2: Créer
+    '/app/notifications',     // 3: Notifications
+    '/app/jobs',              // 4: Emplois (ou "Mes Projets" si c'est ce que vous voulez)
   ];
 
   int _currentIndex = 0;
@@ -69,8 +68,6 @@ class _AppShellState extends State<AppShell> {
         _currentIndex = index;
       });
     }
-    // Si la route actuelle ne correspond pas à un onglet principal (ex: une page de détail profonde),
-    // l'onglet précédent restera sélectionné, ce qui est souvent le comportement souhaité.
   }
 
   void _onItemTapped(int index) {
@@ -79,29 +76,89 @@ class _AppShellState extends State<AppShell> {
 
     if (index == 2) { // Cas spécial pour le bouton "Créer" (index 2)
       debugPrint('Bouton Créer tapé !');
-      // Pour une action comme "Publier" ou "Créer", on utilise souvent un `push`
-      // pour ajouter la page par-dessus la pile de navigation.
-      GoRouter.of(context).push(_routes[index]); // Navigue vers '/app/create/project'
+      GoRouter.of(context).push(_routes[index]);
     } else {
-      // Pour les autres onglets, utilisez `.go()` pour naviguer et réinitialiser
-      // potentiellement la pile de navigation de cet onglet.
       GoRouter.of(context).go(_routes[index]);
     }
-    // L'index sera mis à jour automatiquement par `didUpdateWidget` lorsque GoRouter change la route.
-    // Pas besoin d'un `setState()` direct ici pour `_currentIndex` après un `go()`.
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // --- APP BAR STYLE LINKEDIN ---
+      appBar: AppBar(
+        backgroundColor: cardBackground, // Utilise votre couleur primaire pour le fond de l'AppBar
+        elevation: 1, // Une légère ombre sous l'AppBar
+        toolbarHeight: 60, // Hauteur de la barre
+        titleSpacing: 0, // Supprime l'espace par défaut à gauche du titre
+
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16.0),
+          child: GestureDetector(
+            onTap: () {
+              // Action pour le clic sur le profil/menu
+              // Assurez-vous que le Scaffold de votre MaterialApp a un Drawer pour que cela fonctionne.
+              // Sinon, vous devrez implémenter un menu contextuel ou une autre navigation.
+              Scaffold.of(context).openDrawer();
+              debugPrint('Icône Profil/Menu tapée !');
+            },
+            child: CircleAvatar(
+              backgroundColor: accentColor, // Exemple de couleur pour l'avatar
+              // Vous pouvez remplacer le Text par un Image.network ou Image.asset
+              child: Text(
+                'M', // Initiale de l'utilisateur ou icône
+                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ),
+        title: Container(
+          height: 40, // Hauteur de la barre de recherche
+          margin: const EdgeInsets.symmetric(horizontal: 10.0), // Marge horizontale
+          decoration: BoxDecoration(
+            color: darkGray, // Couleur de fond du champ de recherche
+            borderRadius: BorderRadius.circular(8.0), // Bords arrondis
+          ),
+          child: TextField(
+            readOnly: true, // Empêche l'édition directe, le tap ouvre une autre page
+            onTap: () {
+              // Action pour ouvrir la page de recherche (GoRouter push pour une nouvelle page)
+              debugPrint('Champ de recherche tapé !');
+              // Exemple: GoRouter.of(context).push('/app/search');
+            },
+            decoration: InputDecoration(
+              hintText: 'Rechercher',
+              hintStyle: TextStyle(color: lightGray), // Couleur du texte d'aide
+              prefixIcon: Icon(Icons.search, color: lightGray), // Icône de recherche
+              contentPadding: EdgeInsets.symmetric(vertical: 8.0), // Ajuste le padding interne
+              border: InputBorder.none, // Supprime la bordure par défaut
+              isDense: true, // Rend le champ plus compact
+            ),
+            style: TextStyle(color: Colors.white), // Couleur du texte tapé dans le champ
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.message_rounded, color: accentColor), // Icône de messages
+            onPressed: () {
+              // Action pour les messages
+              debugPrint('Icône Messages tapée !');
+              // Exemple: GoRouter.of(context).push('/app/messages');
+            },
+          ),
+          SizedBox(width: 8.0), // Espacement à droite
+        ],
+      ),
+      // --- FIN APP BAR ---
+
       body: widget.child, // Affiche le widget enfant (la page de la route GoRouter actuelle)
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: _onItemTapped,
-        // --- UTILISATION DIRECTE DES COULEURS ICI ---
+        // --- UTILISATION DES COULEURS POUR LA BOTTOM NAV BAR ---
         selectedItemColor: accentColor, // Votre couleur d'accent pour l'élément sélectionné
         unselectedItemColor: darkGray, // Votre gris foncé pour les éléments non sélectionnés
-        backgroundColor: cardBackground, // Votre couleur primaire pour le fond de la barre
+        backgroundColor: cardBackground, // <--- CORRECTION ICI : Utilisez primaryColor pour le fond
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
         unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
         type: BottomNavigationBarType.fixed, // Nécessaire pour plus de 3 éléments
@@ -112,7 +169,7 @@ class _AppShellState extends State<AppShell> {
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.people),
-            label: 'Projets', // Renommé pour correspondre à ListProjectPage
+            label: 'Projets', // Correspond à /app/projects
           ),
           BottomNavigationBarItem(
             // C'est votre bouton central "Créer"
@@ -126,15 +183,14 @@ class _AppShellState extends State<AppShell> {
             ),
             label: 'Créer', // Texte pour le bouton central
           ),
-          // Pour ces onglets, si vous n'avez pas de pages spécifiques existantes,
-          // vous devrez créer de simples placeholders ou de vraies pages.
           const BottomNavigationBarItem(
             icon: Icon(Icons.notifications),
             label: 'Notifications',
           ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.work),
-            label: 'Mes Projets',
+            label: 'Mes Projets', // Correspond à /app/jobs si vous voulez, ou Emplois.
+            // Assurez-vous que le nom de la route et le label correspondent à ce que vous voulez.
           ),
         ],
       ),

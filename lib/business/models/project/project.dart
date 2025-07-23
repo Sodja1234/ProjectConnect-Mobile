@@ -4,7 +4,7 @@ import 'package:odc_mobile_template/business/models/project/status.dart';
 import 'package:odc_mobile_template/business/models/user/user.dart';
 
 class Project {
-  final int id;
+  final int? id;
   final String title;
   final String description;
   final String slug;
@@ -22,7 +22,7 @@ class Project {
   final List<ProjectRoleSkill> projectRolesSkills;
 
   Project({
-    required this.id,
+     this.id,
     required this.title,
     required this.slug,
     required this.description,
@@ -43,7 +43,7 @@ class Project {
   factory Project.fromJson(Map<String, dynamic> json) {
     return Project(
       id: json['id'],
-      slug: json['slug'],
+      slug: json['slug']??'',
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       dateStart: json['date_start']?.toString(),
@@ -51,9 +51,10 @@ class Project {
       budget: json['budget'] != null ? json['budget'].toString() : null,
       location: json['location'] ?? '',
       visibility: json['visibility'] ?? '',
-      createdBy: User.fromJson(json['created_by']),
-      updatedBy: User.fromJson(json['updated_by']),
-      status: Status.fromJson(json['status']),
+      createdBy: json['created_by'] != null ? User.fromJson(json['created_by']) : User.empty(),
+      updatedBy: json['updated_by'] != null ? User.fromJson(json['updated_by']) : User.empty(),
+
+      status: json['status'] != null ? Status.fromJson(json['status']) : Status.empty(),
       createdAt: json['created_at'] ?? '',
       updatedAt: json['updated_at'] ?? '',
       domains:

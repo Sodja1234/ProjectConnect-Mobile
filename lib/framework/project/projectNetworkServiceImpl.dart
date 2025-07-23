@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:odc_mobile_template/business/models/project/createProject.dart';
+import 'package:odc_mobile_template/business/models/project/project.dart';
 import 'package:odc_mobile_template/business/models/project/projectResponse.dart';
 import 'package:odc_mobile_template/business/models/project/roleSkill.dart';
 import 'package:odc_mobile_template/framework/utils/http/localHttpUtils.dart';
@@ -47,14 +48,33 @@ class ProjectNetworkServiceImpl extends ProjectNetworkService {
     }
   }
 
+  @override
+  Future<Project?> getProject(String slug) async{
+    try{
+      var url = '$baseUrl/projects/$slug';
+      var response = await httpUtils.getData(url);
+      var data =jsonDecode(response);
+      print(data);
+      return Project.fromJson(data);
+
+    }catch(e,stack){
+      print('Exception lors de la récupération des projets : $e');
+      print(stack);
+      return null;
+
+    }
+
+  }
+
 
 }
 void main() async {
 
-  var service=ProjectNetworkServiceImpl(baseUrl: 'http://10.224.196.165:8000/api', httpUtils: LocalHttpUtils());
+  var service=ProjectNetworkServiceImpl(baseUrl: 'http://10.252.252.54:8000/api', httpUtils: LocalHttpUtils());
 
- var projects= service.getProjects(perPage: 2);
- projects.then((value) => print(value));
+ var project= service.getProject("plateforme-collaborative-pour-artistes-independants");
+ project.then((value) => print(value));
+
 
 
 }

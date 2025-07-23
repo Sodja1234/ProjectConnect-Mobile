@@ -4,9 +4,9 @@ import 'package:intl/intl.dart';
 import 'package:odc_mobile_template/business/models/project/roleSkill.dart';
 import 'package:odc_mobile_template/pages/createProject/createProjectCtrl.dart';
 import 'package:odc_mobile_template/pages/createProject/createProjectState.dart';
-import 'package:odc_mobile_template/pages/widget/customWidget.dart';
 import '../../../main.dart';
 import '../../../utils/navigationUtils.dart';
+import '../../widget/customWidget.dart';
 
 class ProjectFormPage extends ConsumerStatefulWidget {
   const ProjectFormPage({super.key});

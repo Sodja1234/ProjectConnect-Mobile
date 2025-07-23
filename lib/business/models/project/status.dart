@@ -29,4 +29,9 @@ class Status{
     'created_at': createdAt?.toIso8601String(),
     'updated_at': updatedAt?.toIso8601String(),
   };
+
+
+  factory Status.empty() {
+    return Status(id: 0, name: '');
+  }
 }

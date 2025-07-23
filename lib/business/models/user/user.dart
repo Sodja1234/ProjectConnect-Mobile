@@ -18,4 +18,8 @@ class User {
         'name': name,
         'email': email,
       };
+
+  factory User.empty() {
+    return User(id: 0, name: '', email: '');
+  }
 }

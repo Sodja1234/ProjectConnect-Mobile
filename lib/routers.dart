@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:odc_mobile_template/pages/auth/login/login_screen.dart';
 import 'package:odc_mobile_template/pages/auth/register/registerUserPage.dart';
 import 'package:odc_mobile_template/pages/auth/verifyOtp/verifyOtpPage.dart';
 import 'package:odc_mobile_template/pages/createProject/createProjectPage.dart';
@@ -12,7 +13,6 @@ import 'pages/intro/introPage.dart';
 import 'utils/navigationUtils.dart';
 import './main.dart';
 import 'pages/home/homePage.dart';
-import 'pages/login/login_screen.dart';
 
 final routerConfigProvider = Provider<GoRouter>((ref) {
   final navigatorKey = getIt<NavigationUtils>().navigatorKey;

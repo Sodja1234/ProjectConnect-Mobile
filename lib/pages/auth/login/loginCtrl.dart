@@ -6,7 +6,7 @@ import 'package:odc_mobile_template/business/models/user/user.dart';
 import 'package:odc_mobile_template/business/services/user/userNetworkService.dart';
 import 'package:odc_mobile_template/main.dart';
 import 'package:odc_mobile_template/utils/http/HttpRequestException.dart';
-import '../intro/appCtrl.dart';
+import '../../intro/appCtrl.dart';
 import 'login_state.dart';
 
 class LoginController extends StateNotifier<LoginState> {

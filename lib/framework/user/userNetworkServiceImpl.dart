@@ -66,7 +66,8 @@ class UserNetworkServiceImpl extends UserNetworkService {
 
   // @override
   Future<void> registerUser(RegisterUser registerUser) async {
-   var url = '$baseUrl/register/';
+   var url = '$baseUrl/register';
+   print(url);
    var body = registerUser.toJson();
    var response = await httpUtils.postData(url,body: body);
    print(response);

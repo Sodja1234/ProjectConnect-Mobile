@@ -69,4 +69,44 @@ class Project {
           [],
     );
   }
+  factory Project.empty() {
+    return Project(
+      id: null,
+      title: '',
+      slug: '',
+      description: '',
+      dateStart: null,
+      dateEnd: null,
+      budget: null,
+      location: '',
+      visibility: '',
+      status: Status.empty(),
+      createdBy: User.empty(),
+      updatedBy: User.empty(),
+      createdAt: '',
+      updatedAt: '',
+      domains: [],
+      projectRolesSkills: [],
+    );
+  }
+
+
+  Map toJson() => {
+    'id': id,
+    'title': title,
+    'slug': slug,
+    'description': description,
+    'date_start': dateStart,
+    'date_end': dateEnd,
+    'budget': budget,
+    'location': location,
+    'visibility': visibility,
+    'status': status.toJson(),
+    'created_by': createdBy.toJson(),
+    'updated_by': updatedBy.toJson(),
+    'created_at': createdAt,
+    'updated_at': updatedAt,
+    'domains': domains.map((e) => e.toJson()).toList(),
+     'project_roles_skills': projectRolesSkills.map((e) => e.toJson()).toList(),
+  };
 }

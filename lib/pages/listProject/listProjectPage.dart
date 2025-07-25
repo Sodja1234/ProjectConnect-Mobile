@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:odc_mobile_template/business/models/project/project.dart';
 import 'package:odc_mobile_template/pages/listProject/listProjectCtrl.dart';
 import 'package:odc_mobile_template/pages/listProject/listProjectState.dart';
 import '../../../main.dart';
 import '../../../utils/navigationUtils.dart';
+import '../singleProject/singleProjectPage.dart';
 
 class ListProjectPage extends ConsumerStatefulWidget {
   const ListProjectPage({super.key});
@@ -836,9 +838,7 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // Navigation vers les détails
-                },
+                onPressed: () => GoRouter.of(context).push('/public/projects/${project.slug}'),
                 icon: const Icon(Icons.arrow_forward_rounded, size: 16),
                 label: const Text('Voir le projet'),
                 style: ElevatedButton.styleFrom(

@@ -6,6 +6,7 @@ import 'package:odc_mobile_template/pages/auth/register/registerUserPage.dart';
 import 'package:odc_mobile_template/pages/auth/verifyOtp/verifyOtpPage.dart';
 import 'package:odc_mobile_template/pages/createProject/createProjectPage.dart';
 import 'package:odc_mobile_template/pages/listProject/listProjectPage.dart';
+import 'package:odc_mobile_template/pages/singleProject/singleProjectPage.dart';
 import 'package:odc_mobile_template/widget/app_shell.dart';
 import 'pages/404/not_found_page.dart';
 import 'pages/intro/appCtrl.dart';
@@ -20,7 +21,7 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: navigatorKey,
     debugLogDiagnostics: true,
-    initialLocation: "/public/login",
+    initialLocation: "/app/home",
 
     // --- LA CORRECTION EST ICI : Utilisez ref.read au lieu de ref.watch ---
     redirect: (context, state) {
@@ -54,7 +55,7 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
       // Scénario 2: L'utilisateur n'est PAS connecté
       else {
         if (isGoingToAppRoute && !isGoingToLoginPage) {
-          redirectTo = "/public/login"; // Rediriger vers la connexion si tente d'accéder à une route d'application
+         // redirectTo = "/public/login"; // Rediriger vers la connexion si tente d'accéder à une route d'application
         }
         // else: Si déjà sur /public/login ou /public/intro et non authentifié, aucune redirection n'est nécessaire.
       }
@@ -73,7 +74,7 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
-        path: "/public/auth/login",
+        path: "/public/login",
         name: 'login_page',
         builder: (ctx, state) {
           return LoginPage();
@@ -84,6 +85,13 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
         name: 'home_page_public',
         builder: (ctx, state) {
           return ListProjectPage();
+        },
+      ),
+      GoRoute(
+        path: '/public/projects/:slug',
+        builder: (context, state) {
+          final slug = state.pathParameters['slug']!;
+          return SingleProjectPage(slug: slug);
         },
       ),
       GoRoute(
@@ -120,6 +128,7 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
               return ListProjectPage();
             },
           ),
+
           GoRoute(
             path: "/app/create/project",
             name: 'app_create_project_page',

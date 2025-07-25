@@ -55,7 +55,7 @@ class ProjectNetworkServiceImpl extends ProjectNetworkService {
       var response = await httpUtils.getData(url);
       var data =jsonDecode(response);
       print(data);
-      return Project.fromJson(data);
+      return Project.fromJson(data['data']);
 
     }catch(e,stack){
       print('Exception lors de la récupération des projets : $e');
@@ -70,7 +70,7 @@ class ProjectNetworkServiceImpl extends ProjectNetworkService {
 }
 void main() async {
 
-  var service=ProjectNetworkServiceImpl(baseUrl: 'http://10.252.252.54:8000/api', httpUtils: LocalHttpUtils());
+  var service=ProjectNetworkServiceImpl(baseUrl: 'http://10.252.252.27:8000/api', httpUtils: LocalHttpUtils());
 
  var project= service.getProject("plateforme-collaborative-pour-artistes-independants");
  project.then((value) => print(value));

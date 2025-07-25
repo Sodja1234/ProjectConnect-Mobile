@@ -3,12 +3,14 @@ class Skill{
   final String name;
   final DateTime? createdAt;
   final DateTime? updatedAt;
+  final double? experience_percentage;
 
   Skill({
     required this.id,
     required this.name,
      this.createdAt,
-     this.updatedAt
+     this.updatedAt,
+     this.experience_percentage,
 
 });
   factory Skill.fromJson(Map<String, dynamic> json){
@@ -21,6 +23,7 @@ class Skill{
       updatedAt: json['updated_at'] != null
           ? DateTime.tryParse(json['updated_at'])
           : null,
+      experience_percentage: json['experience_percentage']?.toDouble() ?? 0.0
     );
   }
   Map toJson()=>{
@@ -28,5 +31,6 @@ class Skill{
     'name': name,
     'created_at': createdAt?.toIso8601String(),
     'updated_at': updatedAt?.toIso8601String(),
+    'experience_percentage': experience_percentage
   };
 }

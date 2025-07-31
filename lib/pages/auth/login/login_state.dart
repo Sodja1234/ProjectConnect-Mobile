@@ -8,6 +8,7 @@ class LoginState {
   final TextEditingController passwordController;
   final GlobalKey<FormState> formKey;
   final String? error;
+  final bool isLoginSuccess;
 
   LoginState({
     required this.isPasswordVisible,
@@ -17,6 +18,7 @@ class LoginState {
     required this.passwordController,
     required this.formKey,
     this.error,
+    required this.isLoginSuccess,
   });
 
   LoginState copyWith({
@@ -27,6 +29,7 @@ class LoginState {
     TextEditingController? passwordController,
     GlobalKey<FormState>? formKey,
     String? error,
+    bool? isLoginSuccess,
   }) {
     return LoginState(
       isPasswordVisible: isPasswordVisible ?? this.isPasswordVisible,
@@ -36,6 +39,7 @@ class LoginState {
       passwordController: passwordController ?? this.passwordController,
       formKey: formKey ?? this.formKey,
       error: error,
+      isLoginSuccess: isLoginSuccess ?? this.isLoginSuccess,
     );
   }
 }

@@ -6,11 +6,12 @@ class AppState {
   User? user;
   bool? isLoading = false;
   String? error;
+  String? userToken;
 
-  AppState({this.user, this.isLoading, this.error});
+  AppState({this.user, this.isLoading, this.error, this.userToken});
 
-  AppState copyWith({User? user, bool? isLoading, String? error}) {
-    return AppState(user: user ?? this.user, isLoading: isLoading ?? this.isLoading, error: error ?? this.error);
+  AppState copyWith({User? user, bool? isLoading, String? error, String ? userToken}) {
+    return AppState(user: user ?? this.user, isLoading: isLoading ?? this.isLoading, error: error ?? this.error, userToken : userToken ?? this.userToken);
   }
   
   

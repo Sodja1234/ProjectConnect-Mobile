@@ -1,45 +1,79 @@
 // lib/pages/intro/appCtrl.dart
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../business/models/user/user.dart'; // Ensure this import is correct for your User model
-import '../../business/services/user/userLocalService.dart';
-import '../../main.dart';
-import 'appState.dart'; // Ensure this import is correct for your AppState
+import '../../business/models/user/authResponse.dart';
+import '../../business/models/user/user.dart';
+import '../../utils/localManager.dart'; // Utilise LocalManager directement
+import '../../main.dart'; // Pour getIt
+import 'appState.dart';
 
 class AppCtrl extends StateNotifier<AppState> {
-  var userLocalService = getIt<UserLocalService>();
+  // Injecte LocalManager directement
+  final LocalManager localManager = getIt<LocalManager>();
+  late final ValueNotifier<bool> _isAuthentificatedNotifier;
 
-  AppCtrl() : super(AppState(user: null, error: null)) {
-    // It's good practice to try and load the user right away when the controller is created
-    getUser();
+  ValueNotifier<bool> get isAuthenticatedNotifier => _isAuthentificatedNotifier;
+
+  AppCtrl() : super(AppState(user: null, userToken: null, error: null)) {
+    _isAuthentificatedNotifier = ValueNotifier<bool>
+      (
+      state.userToken != null && state.userToken!.isNotEmpty
+        );
+    _loadAuthState();
   }
 
-  // Method to set the user (called after successful login)
-  void setUser(User? newUser) {
-    state = state.copyWith(user: newUser);
-    print('AppCtrl: User state updated to: ${newUser?.email ?? 'null'}'); // For debugging
+  @override
+  set state(AppState value){
+    super.state = value;
+    final newAuthStatus = value.userToken != null && value.userToken!.isNotEmpty;
+    if (_isAuthentificatedNotifier.value != newAuthStatus) {
+      _isAuthentificatedNotifier.value = newAuthStatus;
+    }
+
   }
 
-  Future<void> getUser() async {
+
+  Future<void> _loadAuthState() async {
     try {
-      var user = await userLocalService.recupererUser();
-      state = state.copyWith(user: user);
-      print('AppCtrl: User loaded from local service: ${user?.email ?? 'null'}'); // For debugging
+      final user = await localManager.readUser(); // Utilise readUser de LocalManager
+      final token = await localManager.readToken(); // Utilise readToken de LocalManager
+      state = state.copyWith(user: user, userToken: token);
+      print('AppCtrl: User loaded from local storage: ${user?.email ?? 'null'}');
+      print('AppCtrl: Token loaded from local storage: ${token != null && token.isNotEmpty ? 'Loaded' : 'null'}');
     } catch (e) {
       state = state.copyWith(error: e.toString());
-      print('AppCtrl: Error loading user from local service: $e'); // For debugging
+      print('AppCtrl: Error loading auth state from local storage: $e');
     }
   }
 
-  // You might also want a logout method
+  // --- LA MÉTHODE LOGIN EST ICI ET ACCEPTE UN AuthResponse ---
+  Future<void> login(AuthResponse authResponse) async { // <--- CHANGEMENT ICI
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      final User user = authResponse.data.toUser(); // Extrait l'utilisateur du data
+      final String token = authResponse.data.token; // Extrait le token du data
+
+      await localManager.saveUser(user);
+      await localManager.saveToken(token);
+      state = state.copyWith(user: user, userToken: token, isLoading: false);
+      print('AppCtrl: Login successful for user: ${user.email}, token saved.');
+    } catch (e) {
+      state = state.copyWith(error: e.toString(), isLoading: false);
+      print('AppCtrl: Error saving auth state: $e');
+      rethrow;
+    }
+  }
+
   void logout() {
-    state = state.copyWith(user: null);
-    userLocalService.supprimerUser(); // Clear user from local storage
+    state = state.copyWith(user: null, userToken: null);
+    localManager.deleteUser(); // Utilise deleteUser de LocalManager
+    localManager.deleteToken(); // Utilise deleteToken de LocalManager
     print('AppCtrl: User logged out and cleared from storage.');
   }
+
+
 }
 
 final appCtrlProvider = StateNotifierProvider<AppCtrl, AppState>((ref) {
-  // ref.keepAlive(); // Keep alive is usually not needed for AppCtrl unless specific reason
-  // It can sometimes hide issues if the provider is never disposed when it should be.
   return AppCtrl();
 });

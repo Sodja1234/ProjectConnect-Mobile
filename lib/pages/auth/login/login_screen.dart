@@ -22,7 +22,7 @@ class LoginPage extends ConsumerWidget {
           SnackBar(
             content: Text(current.error!),
             backgroundColor: Colors.red.shade600,
-            behavior: SnackBarBehavior.floating,
+            behavior: SnackBarBehavior.fixed,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );

@@ -96,16 +96,14 @@ class _AppShellState extends State<AppShell> {
           padding: const EdgeInsets.only(left: 16.0),
           child: GestureDetector(
             onTap: () {
-              // Action pour le clic sur le profil/menu
-              // Assurez-vous que le Scaffold de votre MaterialApp a un Drawer pour que cela fonctionne.
-              // Sinon, vous devrez implémenter un menu contextuel ou une autre navigation.
-              Scaffold.of(context).openDrawer();
-              debugPrint('Icône Profil/Menu tapée !');
+              // --- REDIRECTION VERS LA PAGE DE PROFIL ICI ---
+              debugPrint('Icône Profil/Menu tapée ! Redirection vers /app/profile');
+              GoRouter.of(context).go('/app/profil'); // Navigue vers la page de profil
             },
             child: CircleAvatar(
               backgroundColor: accentColor, // Exemple de couleur pour l'avatar
               // Vous pouvez remplacer le Text par un Image.network ou Image.asset
-              child: Text(
+              child: const Text( // Utiliser const si le contenu est statique
                 'M', // Initiale de l'utilisateur ou icône
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
@@ -126,7 +124,7 @@ class _AppShellState extends State<AppShell> {
               debugPrint('Champ de recherche tapé !');
               // Exemple: GoRouter.of(context).push('/app/search');
             },
-            decoration: InputDecoration(
+            decoration: const InputDecoration( // Utiliser const si le contenu est statique
               hintText: 'Rechercher',
               hintStyle: TextStyle(color: lightGray), // Couleur du texte d'aide
               prefixIcon: Icon(Icons.search, color: lightGray), // Icône de recherche
@@ -134,19 +132,19 @@ class _AppShellState extends State<AppShell> {
               border: InputBorder.none, // Supprime la bordure par défaut
               isDense: true, // Rend le champ plus compact
             ),
-            style: TextStyle(color: Colors.white), // Couleur du texte tapé dans le champ
+            style: const TextStyle(color: Colors.white), // Couleur du texte tapé dans le champ
           ),
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.message_rounded, color: accentColor), // Icône de messages
+            icon: const Icon(Icons.message_rounded, color: accentColor), // Icône de messages
             onPressed: () {
               // Action pour les messages
               debugPrint('Icône Messages tapée !');
               // Exemple: GoRouter.of(context).push('/app/messages');
             },
           ),
-          SizedBox(width: 8.0), // Espacement à droite
+          const SizedBox(width: 8.0), // Espacement à droite
         ],
       ),
       // --- FIN APP BAR ---
@@ -158,7 +156,7 @@ class _AppShellState extends State<AppShell> {
         // --- UTILISATION DES COULEURS POUR LA BOTTOM NAV BAR ---
         selectedItemColor: accentColor, // Votre couleur d'accent pour l'élément sélectionné
         unselectedItemColor: darkGray, // Votre gris foncé pour les éléments non sélectionnés
-        backgroundColor: cardBackground, // <--- CORRECTION ICI : Utilisez primaryColor pour le fond
+        backgroundColor: cardBackground, // <--- CORRECTION ICI : Utilisez cardBackground (blanc)
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold),
         unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.normal),
         type: BottomNavigationBarType.fixed, // Nécessaire pour plus de 3 éléments

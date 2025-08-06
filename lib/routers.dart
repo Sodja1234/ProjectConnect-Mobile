@@ -12,6 +12,7 @@ import 'package:odc_mobile_template/pages/createProject/createProjectPage.dart';
 import 'package:odc_mobile_template/pages/intro/appState.dart';
 import 'package:odc_mobile_template/pages/listProject/listProjectPage.dart';
 import 'package:odc_mobile_template/pages/profil/profil_screen.dart';
+import 'package:odc_mobile_template/pages/singleProject/singleProjectPage.dart';
 import 'package:odc_mobile_template/widget/app_shell.dart';
 import 'pages/404/not_found_page.dart';
 import 'pages/intro/appCtrl.dart';
@@ -184,18 +185,3 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
   );
 });
 
-// Assure-toi d'avoir ta page SingleProjectPage
-class SingleProjectPage extends StatelessWidget {
-  final String slug;
-  const SingleProjectPage({super.key, required this.slug});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Détails du projet: $slug')),
-      body: Center(
-        child: Text('Détails du projet $slug. (Cette page est un placeholder)'),
-      ),
-    );
-  }
-}

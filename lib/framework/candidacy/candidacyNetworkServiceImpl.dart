@@ -11,18 +11,11 @@ class CandidacyNetworkServiceImpl  extends CandidacyNetworkService{
 
   @override
   Future<bool?> applyForRole(int roleId, String token) async{
-    try {
-
-      var url = '$baseUrl/project-roles/${roleId}/apply';
+    var url = '$baseUrl/project-roles/${roleId}/apply';
       var response = await httpUtils.postData(
           url, token: token);
       print(response);
       return true;
-    } catch (e) {
-      print('Exception lors de la création du projet : $e');
-      return false;
-    }
-
   }
   
 }

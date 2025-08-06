@@ -5,12 +5,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get_it/get_it.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:go_router/go_router.dart';
+import 'package:odc_mobile_template/business/services/candidacy/candidacyNetworkService.dart';
 
 // Importez les services et utilitaires mis à jour
 import 'package:odc_mobile_template/business/services/domain/domainNetworkService.dart';
 import 'package:odc_mobile_template/business/services/project/projectNetworkService.dart';
 import 'package:odc_mobile_template/business/services/role/roleNetworkService.dart';
 import 'package:odc_mobile_template/business/services/skill/skillNetworkService.dart';
+import 'package:odc_mobile_template/framework/candidacy/candidacyNetworkServiceImpl.dart';
 import 'package:odc_mobile_template/framework/domain/domainNetworkServiceImpl.dart';
 import 'package:odc_mobile_template/framework/project/projectNetworkServiceImpl.dart';
 import 'package:odc_mobile_template/framework/role/roleNetworkServiceImpl.dart';
@@ -68,11 +70,12 @@ void configureImplementations() {
   getIt.registerLazySingleton<UserProfilNetworkService>(() => UserProfilNetworkServiceImpl(baseUrl: baseUrl, httpUtils: getIt<HttpUtils>()));
 
 
-  // Services de projet, domaine, rôle, compétence
+  // Services de projet, domaine, rôle, compétence,candidatures
   getIt.registerLazySingleton<ProjectNetworkService>(() => ProjectNetworkServiceImpl(baseUrl: baseUrl, httpUtils: getIt<HttpUtils>()));
   getIt.registerLazySingleton<DomainNetworkService>(() => DomainNetworkServiceImpl(baseUrl: baseUrl, httpUtils: getIt<HttpUtils>()));
   getIt.registerLazySingleton<RoleNetworkService>(() => RoleNetworkServiceImpl(baseUrl: baseUrl, httpUtils: getIt<HttpUtils>()));
   getIt.registerLazySingleton<SkillNetworkService>(() => SkillNetworkServiceImpl(baseUrl: baseUrl, httpUtils: getIt<HttpUtils>()));
+  getIt.registerLazySingleton<CandidacyNetworkService>(()=>CandidacyNetworkServiceImpl(httpUtils: getIt<HttpUtils>(), baseUrl: baseUrl));
 }
 
 void main() async {

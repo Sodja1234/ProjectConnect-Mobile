@@ -1,8 +1,14 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:odc_mobile_template/pages/singleProject/singleProjectState.dart';
+import 'package:odc_mobile_template/utils/http/HttpRequestException.dart';
+import '../../business/services/candidacy/candidacyNetworkService.dart';
 import '../../business/services/project/projectNetworkService.dart';
 import '../../main.dart';
+import '../../utils/localManager.dart';
 
 class SingleProjectCtrl extends StateNotifier<SingleProjectState> {
   final ProjectNetworkService _projectService;
@@ -10,6 +16,53 @@ class SingleProjectCtrl extends StateNotifier<SingleProjectState> {
 
   SingleProjectCtrl(this._projectService)
       : super(SingleProjectState.initial());
+
+  final _candidacyService = getIt<CandidacyNetworkService>();
+
+
+  Future<bool?> applyForRole(int roleId, String token) async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+
+      final candidacy = await _candidacyService.applyForRole(roleId, token);
+      print(candidacy);
+      return true;
+
+    } on HttpRequestException catch (e) {
+      String errorMessage = 'Erreur inconnue';
+      try {
+        if (e.body != null) {
+          final decoded = jsonDecode(e.body!) as Map<String, dynamic>;
+          errorMessage = decoded['message'] ?? e.message;
+        } else {
+          errorMessage = e.message;
+        }
+      } catch (_) {
+        errorMessage = e.message;
+      }
+
+      debugPrint('[SingleProjectCtrl] Error candidacy project: $errorMessage');
+
+      state = state.copyWith(
+        isLoading: false,
+        error: errorMessage,
+      );
+
+      return false;
+
+    } catch (e, stack) {
+      debugPrint('[SingleProjectCtrl] Error candidacy project: $e');
+      debugPrint(stack.toString());
+
+      state = state.copyWith(
+        isLoading: false,
+        error: _getErrorMessage(e),
+      );
+      return false;
+    }
+  }
+
+
 
   Future<void> loadProject(String slug) async {
     try {
@@ -27,6 +80,7 @@ class SingleProjectCtrl extends StateNotifier<SingleProjectState> {
 
       final project = await _projectService.getProject(slug);
       debugPrint('[SingleProjectCtrl] Received project data: ${project != null ? "success" : "null"}');
+      print(project);
 
       if (project == null) {
         debugPrint('[SingleProjectCtrl] Project not found for slug: $slug');

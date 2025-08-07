@@ -179,6 +179,7 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
               return ProfilePage(user: user, userToken: appState.userToken ?? ''); // Passe le token si nécessaire
             },
           ),
+
         ],
       ),
 
@@ -205,6 +206,20 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
 
           // On ne passe plus le token et le chatId au constructeur, car la page les récupère elle-même
           return const MessageScreen();
+        },
+      ),
+      GoRoute(
+        path: "/app/chats",
+        name: 'app_chats_page',
+        builder: (ctx, state) {
+          final token = appState.userToken;
+          if (token == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              GoRouter.of(ctx).go('/public/auth/login');
+            });
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          }
+          return ChatScreen(token: token);
         },
       ),
     ],

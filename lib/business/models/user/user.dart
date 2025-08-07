@@ -3,7 +3,7 @@ class User {
   final String name;
   final String email;
   final String? slug;
-  final bool isVerified;
+  final bool? isVerified;
   final String? role;
 
   User({
@@ -22,7 +22,7 @@ class User {
       name: json['name'] as String,
       email: json['email'] as String,
       slug: json['slug'] as String?,
-      isVerified: json['is_verified'] == true,
+      isVerified: json['is_verified'] as bool?,
       role: json['role'] as String?,
     );
   }

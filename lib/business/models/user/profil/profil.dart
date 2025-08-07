@@ -1,9 +1,10 @@
+// lib/business/models/user/profil/profil.dart
 import 'package:intl/intl.dart';
 
 class UserProfile {
-  final int id;
-  final String name;
-  final String email;
+  final int? id;
+  final String? name;
+  final String? email;
   final String? phone;
   final String? location;
   final String? jobTitle;
@@ -12,14 +13,14 @@ class UserProfile {
   final String? profilePhoto;
   final String? about;
   final DateTime? emailVerifiedAt;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String slug;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final String? slug;
 
   UserProfile({
-    required this.id,
-    required this.name,
-    required this.email,
+    this.id,
+    this.name,
+    this.email,
     this.phone,
     this.location,
     this.jobTitle,
@@ -28,45 +29,47 @@ class UserProfile {
     this.profilePhoto,
     this.about,
     this.emailVerifiedAt,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.slug,
+    this.createdAt,
+    this.updatedAt,
+    this.slug,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
-    final userJson = json['user'];
-
     return UserProfile(
-      id: userJson['id'],
-      name: userJson['name'],
-      email: userJson['email'],
-      phone: userJson['phone'],
-      location: userJson['location'],
-      jobTitle: userJson['job_title'],
-      portfolioUrl: userJson['portfolio_url'],
-      availability: userJson['availability'],
-      profilePhoto: userJson['profile_photo'],
-      about: userJson['about'],
-      emailVerifiedAt: userJson['email_verified_at'] != null
-          ? DateTime.parse(userJson['email_verified_at'])
+      id: json['id'],
+      name: json['name'],
+      email: json['email'],
+      phone: json['phone'],
+      location: json['location'],
+      jobTitle: json['job_title'],
+      // Il semble que portfolio_url ne soit pas dans la réponse,
+      // donc il sera null.
+      // Assurez-vous que l'API est correcte si vous vous attendez à cette valeur.
+      portfolioUrl: json['portfolio_url'],
+      availability: json['is_availability'],
+      profilePhoto: json['profile_photo'],
+      about: json['about'],
+      emailVerifiedAt: json['email_verified_at'] != null
+          ? DateTime.parse(json['email_verified_at'])
           : null,
-      createdAt: DateTime.parse(userJson['created_at']),
-      updatedAt: DateTime.parse(userJson['updated_at']),
-      slug: userJson['slug'],
+      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
+      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at']) : null,
+      // slug n'est pas dans votre réponse API, donc il sera null.
+      slug: json['slug'],
     );
   }
 
-  // Helper pour obtenir l'URL complète de la photo de profil
   String? get fullProfilePhotoUrl {
     if (profilePhoto == null) {
       return null;
     }
-    // Assurez-vous que c'est l'URL correcte pour accéder aux fichiers stockés de votre backend
-    return 'http://localhost:8000/storage/$profilePhoto';
+    return 'http://10.252.252.58:8000/api/storage/$profilePhoto';
   }
 
-  // Helper pour formater les dates
   String get formattedCreatedAt {
-    return DateFormat('dd MMM yyyy').format(createdAt);
+    if (createdAt == null) {
+      return 'N/A';
+    }
+    return DateFormat('dd MMM yyyy').format(createdAt!);
   }
 }

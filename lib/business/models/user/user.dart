@@ -22,10 +22,11 @@ class User {
       name: json['name'] as String,
       email: json['email'] as String,
       slug: json['slug'] as String?,
-      isVerified: json['is_verified'] as bool,
+      isVerified: json['is_verified'] == true,
       role: json['role'] as String?,
     );
   }
+
 
   // NOUVEAU : Factory constructor pour un User "vide" ou par défaut
   factory User.empty() {

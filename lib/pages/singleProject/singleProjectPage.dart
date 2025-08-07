@@ -4,6 +4,9 @@ import 'package:odc_mobile_template/pages/singleProject/singleProjectCtrl.dart';
 import 'package:odc_mobile_template/pages/singleProject/singleProjectState.dart';
 import '../../business/models/project/project.dart';
 import '../../business/models/project/projectRoleSkill.dart';
+import '../../main.dart';
+import '../../utils/localManager.dart';
+import '../../widget/app_shell.dart';
 
 class SingleProjectPage extends ConsumerStatefulWidget {
   final String slug;
@@ -21,6 +24,7 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
   final Color mediumGray = const Color(0xFFE9ECEF);
   final Color darkGray = const Color(0xFF6C757D);
   final Color cardBackground = Colors.white;
+  final localManager = getIt<LocalManager>();
 
   @override
   void initState() {
@@ -87,9 +91,7 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
 
   Widget _buildBody(SingleProjectState state, ThemeData theme) {
     if (state.isLoading && state.project == null) {
-      return Center(
-        child: CircularProgressIndicator(color: accentColor),
-      );
+      return Center(child: CircularProgressIndicator(color: accentColor));
     }
 
     if (state.error != null && state.project == null) {
@@ -155,11 +157,7 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.info_outline_rounded,
-            size: 48,
-            color: darkGray,
-          ),
+          Icon(Icons.info_outline_rounded, size: 48, color: darkGray),
           const SizedBox(height: 16),
           Text(
             'Aucune donnée disponible',
@@ -243,26 +241,26 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children: project.domains
-                              .map(
-                                (domain) => Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: mediumGray,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                domain.name,
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: darkGray,
-                                ),
-                              ),
-                            ),
-                          )
-                              .toList(),
+                          children:
+                              project.domains
+                                  .map(
+                                    (domain) => Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: mediumGray,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Text(
+                                        domain.name,
+                                        style: theme.textTheme.labelMedium
+                                            ?.copyWith(color: darkGray),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -304,7 +302,7 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
                       const SizedBox(height: 12),
                       _buildDetailRow(
                         icon: Icons.euro_symbol_rounded,
-                        text: 'Budget: ${project.budget} €',
+                        text: 'Budget: ${project.budget} \$',
                         theme: theme,
                       ),
                       const SizedBox(height: 12),
@@ -400,22 +398,20 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
 
         // Section des rôles avec accordéons
         SliverList(
-          delegate: SliverChildBuilderDelegate(
-                (context, index) {
-              final role = project.projectRolesSkills[index];
-              return Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                child: _buildRoleAccordion(role, theme),
-              );
-            },
-            childCount: project.projectRolesSkills.length,
-          ),
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final role = project.projectRolesSkills[index];
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: _buildRoleAccordion(role, theme),
+            );
+          }, childCount: project.projectRolesSkills.length),
         ),
       ],
     );
   }
 
   Widget _buildRoleAccordion(ProjectRoleSkill roleSkill, ThemeData theme) {
+    final state = ref.read(singleProjectCtrlProvider.notifier);
     return Theme(
       data: Theme.of(context).copyWith(
         dividerColor: Colors.transparent,
@@ -425,9 +421,7 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
         tilePadding: EdgeInsets.zero,
         collapsedBackgroundColor: cardBackground,
         backgroundColor: cardBackground,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         collapsedShape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -439,11 +433,7 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
             color: accentColor.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            Icons.work_rounded,
-            color: accentColor,
-            size: 20,
-          ),
+          child: Icon(Icons.work_rounded, color: accentColor, size: 20),
         ),
         title: Text(
           roleSkill.role.name,
@@ -454,9 +444,7 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
         ),
         subtitle: Text(
           '${roleSkill.skills.length} compétences requises',
-          style: theme.textTheme.labelSmall?.copyWith(
-            color: darkGray,
-          ),
+          style: theme.textTheme.labelSmall?.copyWith(color: darkGray),
         ),
         trailing: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -466,9 +454,7 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
           ),
           child: Text(
             '${roleSkill.candidacies_count} candidatures',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: darkGray,
-            ),
+            style: theme.textTheme.labelSmall?.copyWith(color: darkGray),
           ),
         ),
         children: [
@@ -485,26 +471,27 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: roleSkill.skills
-                  .map(
-                    (skill) => Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: mediumGray,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    skill.name,
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: darkGray,
-                    ),
-                  ),
-                ),
-              )
-                  .toList(),
+              children:
+                  roleSkill.skills
+                      .map(
+                        (skill) => Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: mediumGray,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            skill.name,
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: darkGray,
+                            ),
+                          ),
+                        ),
+                      )
+                      .toList(),
             ),
             const SizedBox(height: 16),
           ],
@@ -538,8 +525,39 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
                 ),
                 elevation: 0,
               ),
-              onPressed: () {
-                // Action pour postuler
+              onPressed: () async {
+                final confirmed = await _showApplyConfirmationDialog(context, roleSkill.role.name);
+
+                if (confirmed == true) {
+                  final token = await localManager.readToken();
+
+                  final success = await ref
+                      .read(singleProjectCtrlProvider.notifier)
+                      .applyForRole(roleSkill.id, token!);
+
+                  if (success == true) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text('Candidature envoyée avec succès'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } else {
+                    final errorMsg =
+                        ref.read(singleProjectCtrlProvider).error ??
+                            'Une erreur inconnue est survenue';
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(errorMsg),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
               },
             ),
           ),
@@ -563,11 +581,7 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
             color: accentColor.withOpacity(0.1),
             shape: BoxShape.circle,
           ),
-          child: Icon(
-            icon,
-            size: 16,
-            color: accentColor,
-          ),
+          child: Icon(icon, size: 16, color: accentColor),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -582,4 +596,91 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
       ],
     );
   }
+}
+Future<bool?> _showApplyConfirmationDialog(BuildContext context, String roleName) async {
+  final theme = Theme.of(context);
+
+  return await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        elevation: 0,
+        backgroundColor: cardBackground,
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Confirmer candidature',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: primaryColor,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Voulez-vous postuler au rôle\n"$roleName" ?',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: darkGray,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      backgroundColor: mediumGray,
+                    ),
+                    child: Text(
+                      'Annuler',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: darkGray,
+                      ),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(false),
+                  ),
+                  const SizedBox(width: 16),
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      backgroundColor: accentColor,
+                    ),
+                    child: Text(
+                      'Confirmer',
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: Colors.white,
+                      ),
+                    ),
+                    onPressed: () => Navigator.of(context).pop(true),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }

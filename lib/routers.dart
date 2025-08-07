@@ -7,10 +7,11 @@ import 'package:go_router/go_router.dart';
 import 'package:odc_mobile_template/pages/auth/login/login_screen.dart';
 import 'package:odc_mobile_template/pages/auth/register/registerUserPage.dart';
 import 'package:odc_mobile_template/pages/auth/verifyOtp/verifyOtpPage.dart';
+import 'package:odc_mobile_template/pages/chat/chat_screen.dart';
 import 'package:odc_mobile_template/pages/createProject/createProjectPage.dart';
-//import 'package:odc_mobile_template/pages/createProject/createProjectPage.dart'; // Nommé ProjectFormPage dans ton routeur
 import 'package:odc_mobile_template/pages/intro/appState.dart';
 import 'package:odc_mobile_template/pages/listProject/listProjectPage.dart';
+import 'package:odc_mobile_template/pages/message/message_screen.dart';
 import 'package:odc_mobile_template/pages/profil/profil_screen.dart';
 import 'package:odc_mobile_template/pages/singleProject/singleProjectPage.dart';
 import 'package:odc_mobile_template/widget/app_shell.dart';
@@ -179,6 +180,32 @@ final routerConfigProvider = Provider<GoRouter>((ref) {
             },
           ),
         ],
+      ),
+
+      // --- ROUTE DU MESSAGE SANS BOTTOM NAVIGATION BAR ---
+      // Cette route est maintenant de haut niveau
+      GoRoute(
+        path: "/app/chats/:chatId",
+        name: 'app_messages_page',
+        builder: (ctx, state) {
+          final token = appState.userToken;
+          final chatIdString = state.pathParameters['chatId'];
+
+          if (token == null || chatIdString == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              GoRouter.of(ctx).go('/public/auth/login');
+            });
+            return const Scaffold(body: Center(child: Text('Paramètres manquants')));
+          }
+
+          final chatId = int.tryParse(chatIdString);
+          if (chatId == null) {
+            return const Scaffold(body: Center(child: Text('ID de chat invalide')));
+          }
+
+          // On ne passe plus le token et le chatId au constructeur, car la page les récupère elle-même
+          return const MessageScreen();
+        },
       ),
     ],
     errorBuilder: (context, state) => const NotFoundPage(),

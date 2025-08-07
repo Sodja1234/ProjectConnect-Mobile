@@ -17,13 +17,26 @@ class CandidacyNetworkServiceImpl  extends CandidacyNetworkService{
       print(response);
       return true;
   }
-  
+  @override
+  Future<bool?> inviteForRole(int roleId, String token, String email) async {
+
+      var url = '$baseUrl/project-roles/${roleId}/invite';
+      var response = await httpUtils.postData(
+        url,
+        body: {'email': email},
+        token: token,
+      );
+      print(response);
+      return true;
+
+  }
+
 }
 
 void main()async{
 
-  var service=CandidacyNetworkServiceImpl(baseUrl: 'http://10.252.252.36:8000/api', httpUtils: LocalHttpUtils()) ;
-  var candidacy = service.applyForRole(65, "2|l3BN3L5JEcj2LN4EfBsXimd1ugny1DwYpAtagGMPc35f6a2d");
+  var service=CandidacyNetworkServiceImpl(baseUrl: 'http://10.20.20.244:8000/api', httpUtils: LocalHttpUtils()) ;
+  var candidacy = service.inviteForRole(13, "9|3B5DyjEN7onPUWECJ58Dfwrg6afagaegFRInPStj07e73c57", "ephraim17@gmail.com");
   print(candidacy);
 
 }

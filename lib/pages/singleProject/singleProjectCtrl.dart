@@ -20,6 +20,48 @@ class SingleProjectCtrl extends StateNotifier<SingleProjectState> {
   final _candidacyService = getIt<CandidacyNetworkService>();
 
 
+  Future<bool?> inviteForRole(int roleId, String token,String email) async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+
+      final candidacy = await _candidacyService.inviteForRole(roleId, token, email);
+      print(candidacy);
+      return true;
+
+    } on HttpRequestException catch (e) {
+      String errorMessage = 'Erreur inconnue';
+      try {
+        if (e.body != null) {
+          final decoded = jsonDecode(e.body!) as Map<String, dynamic>;
+          errorMessage = decoded['message'] ?? e.message;
+        } else {
+          errorMessage = e.message;
+        }
+      } catch (_) {
+        errorMessage = e.message;
+      }
+
+      debugPrint('[SingleProjectCtrl] Error invitation project: $errorMessage');
+
+      state = state.copyWith(
+        isLoading: false,
+        error: errorMessage,
+      );
+
+      return false;
+
+    } catch (e, stack) {
+      debugPrint('[SingleProjectCtrl] Error invitation project: $e');
+      debugPrint(stack.toString());
+
+      state = state.copyWith(
+        isLoading: false,
+        error: _getErrorMessage(e),
+      );
+      return false;
+    }
+  }
+
   Future<bool?> applyForRole(int roleId, String token) async {
     try {
       state = state.copyWith(isLoading: true, error: null);

@@ -4,6 +4,7 @@ import 'package:odc_mobile_template/pages/singleProject/singleProjectCtrl.dart';
 import 'package:odc_mobile_template/pages/singleProject/singleProjectState.dart';
 import '../../business/models/project/project.dart';
 import '../../business/models/project/projectRoleSkill.dart';
+import '../../business/models/user/user.dart';
 import '../../main.dart';
 import '../../utils/localManager.dart';
 import '../../widget/app_shell.dart';
@@ -25,11 +26,17 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
   final Color darkGray = const Color(0xFF6C757D);
   final Color cardBackground = Colors.white;
   final localManager = getIt<LocalManager>();
+  User? currentUser;
 
   @override
   void initState() {
     super.initState();
+    _loadUser();
     Future.microtask(() => _loadProject());
+  }
+
+  Future<void> _loadUser() async {
+    currentUser = await localManager.readUser();
   }
 
   Future<void> _loadProject() async {
@@ -38,6 +45,10 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
 
   Future<void> _refresh() async {
     await ref.read(singleProjectCtrlProvider.notifier).refresh();
+  }
+
+  bool _isCurrentUserCreator(Project project) {
+    return currentUser?.id == project.createdBy.id;
   }
 
   @override
@@ -241,26 +252,25 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
                         Wrap(
                           spacing: 8,
                           runSpacing: 8,
-                          children:
-                              project.domains
-                                  .map(
-                                    (domain) => Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 6,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: mediumGray,
-                                        borderRadius: BorderRadius.circular(20),
-                                      ),
-                                      child: Text(
-                                        domain.name,
-                                        style: theme.textTheme.labelMedium
-                                            ?.copyWith(color: darkGray),
-                                      ),
-                                    ),
-                                  )
-                                  .toList(),
+                          children: project.domains
+                              .map(
+                                (domain) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: mediumGray,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                domain.name,
+                                style: theme.textTheme.labelMedium
+                                    ?.copyWith(color: darkGray),
+                              ),
+                            ),
+                          )
+                              .toList(),
                         ),
                         const SizedBox(height: 16),
                       ],
@@ -301,7 +311,7 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
                       ),
                       const SizedBox(height: 12),
                       _buildDetailRow(
-                        icon: Icons.euro_symbol_rounded,
+                        icon: Icons.attach_money_rounded,
                         text: 'Budget: ${project.budget} \$',
                         theme: theme,
                       ),
@@ -402,7 +412,7 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
             final role = project.projectRolesSkills[index];
             return Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: _buildRoleAccordion(role, theme),
+              child: _buildRoleAccordion(role, theme, project),
             );
           }, childCount: project.projectRolesSkills.length),
         ),
@@ -410,8 +420,9 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
     );
   }
 
-  Widget _buildRoleAccordion(ProjectRoleSkill roleSkill, ThemeData theme) {
-    final state = ref.read(singleProjectCtrlProvider.notifier);
+  Widget _buildRoleAccordion(ProjectRoleSkill roleSkill, ThemeData theme, Project project) {
+    final isCreator = _isCurrentUserCreator(project);
+
     return Theme(
       data: Theme.of(context).copyWith(
         dividerColor: Colors.transparent,
@@ -446,7 +457,8 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
           '${roleSkill.skills.length} compétences requises',
           style: theme.textTheme.labelSmall?.copyWith(color: darkGray),
         ),
-        trailing: Container(
+        trailing: isCreator
+            ? Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
             color: mediumGray,
@@ -456,7 +468,8 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
             '${roleSkill.candidacies_count} candidatures',
             style: theme.textTheme.labelSmall?.copyWith(color: darkGray),
           ),
-        ),
+        )
+            : null,
         children: [
           const SizedBox(height: 8),
           if (roleSkill.skills.isNotEmpty) ...[
@@ -471,27 +484,26 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children:
-                  roleSkill.skills
-                      .map(
-                        (skill) => Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: mediumGray,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            skill.name,
-                            style: theme.textTheme.labelMedium?.copyWith(
-                              color: darkGray,
-                            ),
-                          ),
-                        ),
-                      )
-                      .toList(),
+              children: roleSkill.skills
+                  .map(
+                    (skill) => Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: mediumGray,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    skill.name,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: darkGray,
+                    ),
+                  ),
+                ),
+              )
+                  .toList(),
             ),
             const SizedBox(height: 16),
           ],
@@ -513,7 +525,22 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton.icon(
+            child: isCreator
+                ? ElevatedButton.icon(
+              icon: const Icon(Icons.person_add_alt_1_rounded, size: 18),
+              label: const Text('Inviter'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+              ),
+              onPressed: () => _showInviteDialog(context, roleSkill),
+            )
+                : ElevatedButton.icon(
               icon: const Icon(Icons.send_rounded, size: 18),
               label: const Text('Postuler à ce rôle'),
               style: ElevatedButton.styleFrom(
@@ -526,7 +553,8 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
                 elevation: 0,
               ),
               onPressed: () async {
-                final confirmed = await _showApplyConfirmationDialog(context, roleSkill.role.name);
+                final confirmed = await _showApplyConfirmationDialog(
+                    context, roleSkill.role.name);
 
                 if (confirmed == true) {
                   final token = await localManager.readToken();
@@ -596,91 +624,276 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
       ],
     );
   }
-}
-Future<bool?> _showApplyConfirmationDialog(BuildContext context, String roleName) async {
-  final theme = Theme.of(context);
 
-  return await showDialog<bool>(
-    context: context,
-    builder: (BuildContext context) {
-      return Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        elevation: 0,
-        backgroundColor: cardBackground,
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                'Confirmer candidature',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Voulez-vous postuler au rôle\n"$roleName" ?',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: darkGray,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      backgroundColor: mediumGray,
-                    ),
-                    child: Text(
-                      'Annuler',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: darkGray,
-                      ),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(false),
-                  ),
-                  const SizedBox(width: 16),
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 20,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      backgroundColor: accentColor,
-                    ),
-                    child: Text(
-                      'Confirmer',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: Colors.white,
-                      ),
-                    ),
-                    onPressed: () => Navigator.of(context).pop(true),
-                  ),
-                ],
-              ),
-            ],
+  Future<bool?> _showApplyConfirmationDialog(BuildContext context, String roleName) async {
+    final theme = Theme.of(context);
+
+    return await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
+          elevation: 0,
+          backgroundColor: cardBackground,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  'Confirmer candidature',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Voulez-vous postuler au rôle\n"$roleName" ?',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: darkGray,
+                    height: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        backgroundColor: mediumGray,
+                      ),
+                      child: Text(
+                        'Annuler',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: darkGray,
+                        ),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(false),
+                    ),
+                    const SizedBox(width: 16),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 12,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        backgroundColor: accentColor,
+                      ),
+                      child: Text(
+                        'Confirmer',
+                        style: theme.textTheme.labelLarge?.copyWith(
+                          color: Colors.white,
+                        ),
+                      ),
+                      onPressed: () => Navigator.of(context).pop(true),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showInviteDialog(BuildContext context, ProjectRoleSkill roleSkill) async {
+    final theme = Theme.of(context);
+    final emailController = TextEditingController();
+    final token = await localManager.readToken();
+
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Token non disponible'),
+          backgroundColor: Colors.red,
         ),
       );
-    },
-  );
+      return;
+    }
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        bool isLoading = false;
+        String? errorMessage;
+
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              elevation: 0,
+              backgroundColor: cardBackground,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: MediaQuery.of(context).size.width * 0.9,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Inviter à ce rôle',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: primaryColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Rôle: ${roleSkill.role.name}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: darkGray,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      if (errorMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            errorMessage!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.red,
+                            ),
+                          ),
+                        ),
+                      TextField(
+                        controller: emailController,
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          prefixIcon: Icon(Icons.email_rounded, color: accentColor),
+                        ),
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          if (!isLoading)
+                            Flexible(
+                              child: TextButton(
+                                style: TextButton.styleFrom(
+                                  minimumSize: const Size(120, 48),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  backgroundColor: mediumGray,
+                                ),
+                                child: Text(
+                                  'Annuler',
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: darkGray,
+                                  ),
+                                ),
+                                onPressed: () => Navigator.of(context).pop(),
+                              ),
+                            ),
+                          const SizedBox(width: 12),
+                          Flexible(
+                            child: isLoading
+                                ? const CircularProgressIndicator()
+                                : TextButton(
+                              style: TextButton.styleFrom(
+                                minimumSize: const Size(120, 48),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                backgroundColor: accentColor,
+                              ),
+                              child: Text(
+                                'Envoyer',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              onPressed: () async {
+                                final email = emailController.text.trim();
+                                if (email.isEmpty) {
+                                  setState(() {
+                                    errorMessage = 'Veuillez entrer un email valide';
+                                  });
+                                  return;
+                                }
+
+                                setState(() {
+                                  isLoading = true;
+                                  errorMessage = null;
+                                });
+
+                                try {
+                                  final success = await ref
+                                      .read(singleProjectCtrlProvider.notifier)
+                                      .inviteForRole(roleSkill.id, token, email);
+
+                                  if (success == true) {
+                                    Navigator.of(context).pop();
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Invitation envoyée à $email'),
+                                        backgroundColor: Colors.green,
+                                      ),
+                                    );
+                                  } else {
+                                    setState(() {
+                                      errorMessage = ref
+                                          .read(singleProjectCtrlProvider)
+                                          .error ??
+                                          "Échec de l'envoi de l'invitation";
+                                    });
+                                  }
+                                } finally {
+                                  if (mounted) {
+                                    setState(() => isLoading = false);
+                                  }
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
 }

@@ -1,37 +1,50 @@
-import 'dart:convert'; // Pour jsonDecode
+// lib/framework/user/profil/user_network_service_impl.dart
+
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http; // Import nécessaire pour http.ClientException
 
 import 'package:odc_mobile_template/business/services/user/profil/user_profil_network_service.dart';
 import '../../../business/models/user/profil/profil.dart';
 import '../../../utils/http/HttpUtils.dart';
-import '../../utils/http/localHttpUtils.dart'; // Votre interface abstraite
+import '../../utils/http/localHttpUtils.dart';
 
 class UserProfilNetworkServiceImpl extends UserProfilNetworkService {
   late final String baseUrl;
-  late final HttpUtils httpUtils; // Injection de dépendance pour HttpUtils
+  late final HttpUtils httpUtils;
 
-  UserProfilNetworkServiceImpl({required this.baseUrl, required this.httpUtils});
+  UserProfilNetworkServiceImpl(
+      {required this.baseUrl, required this.httpUtils});
 
   @override
   Future<UserProfile?> getUserProfile(String token) async {
     try {
-      var url = '$baseUrl/profile'; // L'URL de votre endpoint de profil
-
+      var url = '$baseUrl/profile';
       var responseBody = await httpUtils.getData(url, token: token);
 
-      // Décodage de la chaîne JSON
+      // Ajout d'une ligne pour afficher la réponse de l'API
+      print('Réponse brute de l\'API : $responseBody');
+
+      // Assurez-vous de gérer les cas où la réponse est vide
+      if (responseBody == null || responseBody.isEmpty) {
+        print('Erreur: La réponse de l\'API est vide.');
+        return null;
+      }
+
       var data = jsonDecode(responseBody);
 
-      // Assurez-vous que la structure JSON correspond à votre modèle UserProfile.
-      // Dans votre exemple, les données de l'utilisateur sont sous la clé "user".
-      if (data != null && data['user'] != null) {
-        return UserProfile.fromJson(data);
+      if (data is Map<String, dynamic> && data['data'] != null) {
+        // Ajout d'une ligne pour afficher les données passées au modèle
+        print('Données envoyées au modèle : ${data['data']}');
+        return UserProfile.fromJson(data['data']);
       } else {
-        print('Erreur: La réponse JSON ne contient pas la clé "user" ou est vide.');
+        print(
+            'Erreur: La réponse JSON ne contient pas la clé "data" ou est mal formée.');
         return null;
       }
     } catch (e, stack) {
-      print('Exception lors de la récupération du profil utilisateur : $e');
-      print(stack); // Pour obtenir la trace de la pile en cas d'erreur
+      print('Exception inattendue lors de la récupération du profil : $e');
+      print(stack);
       return null;
     }
   }
@@ -39,17 +52,15 @@ class UserProfilNetworkServiceImpl extends UserProfilNetworkService {
 
 void main() async {
   // Simulez un token (en production, il proviendrait de l'authentification)
-  // Remplacez 'YOUR_AUTH_TOKEN_HERE' par un vrai token si nécessaire pour les tests
-  const String testToken = 'Bearer 57|OLAWhWAOt0q7F6rBuOkgYO9XcsW8rr16jCtSsO8ie68f1da7';
+  const String testToken = 'Bearer 13|TaIY25JL9EO00X0a3Wko5j6h5PdL82AcApaUSH2J67f3c38e';
 
-  // Assurez-vous que votre HttpUtils est configuré pour gérer le token si votre API l'exige
-  // Si vous utilisez LocalHttpUtils, il doit être compatible avec HttpUtils
-  var httpUtilsInstance = LocalHttpUtils(); // Ou new HttpUtils() si LocalHttpUtils n'est pas nécessaire
+  // Assurez-vous que votre HttpUtils est configuré pour gérer le token
+  var httpUtilsInstance = LocalHttpUtils();
 
   var userService = UserProfilNetworkServiceImpl(
-    baseUrl: 'http://10.252.252.3:8000/api', // Pour émulateur Android
-    // Ou 'http://192.168.1.X:8000/api' pour appareil physique
-    // Ou 'http://localhost:8000/api' pour le simulateur iOS ou le web
+    // Utilisez l'adresse IP spéciale 10.0.2.2 pour les émulateurs Android.
+    // L'adresse IP d'origine (10.252.252.58) causait une erreur "Network is unreachable".
+    baseUrl: 'http://10.252.252.58:8000/api',
     httpUtils: httpUtilsInstance,
   );
 

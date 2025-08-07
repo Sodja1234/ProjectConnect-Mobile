@@ -27,6 +27,7 @@ class User {
     );
   }
 
+
   // NOUVEAU : Factory constructor pour un User "vide" ou par défaut
   factory User.empty() {
     return User(

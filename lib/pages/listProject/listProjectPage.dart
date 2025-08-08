@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:odc_mobile_template/business/models/project/project.dart';
 import 'package:odc_mobile_template/pages/listProject/listProjectCtrl.dart';
 import 'package:odc_mobile_template/pages/listProject/listProjectState.dart';
 import '../../../main.dart';
 import '../../../utils/navigationUtils.dart';
-import '../singleProject/singleProjectPage.dart';
 
 class ListProjectPage extends ConsumerStatefulWidget {
   const ListProjectPage({super.key});
@@ -18,7 +18,6 @@ class ListProjectPage extends ConsumerStatefulWidget {
 class _ListProjectPageState extends ConsumerState<ListProjectPage>
     with TickerProviderStateMixin {
   final navigation = getIt<NavigationUtils>();
-  final _searchController = TextEditingController();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   final ScrollController _scrollController = ScrollController();
@@ -52,7 +51,6 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
 
   @override
   void dispose() {
-    _searchController.dispose();
     _animationController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -71,6 +69,54 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
     }
   }
 
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return DateFormat('dd MMM yyyy', 'fr').format(date);
+    } catch (e) {
+      return dateString;
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'en cours':
+        return Colors.green;
+      case 'terminé':
+        return Colors.blue;
+      case 'annulé':
+        return Colors.red;
+      default:
+        return Colors.orange;
+    }
+  }
+
+  String _formatPeriod(String? start, String? end) {
+    if (start == null || end == null) return 'Période non spécifiée';
+    return '${_formatDate(start)} - ${_formatDate(end)}';
+  }
+
+  String _formatBudget(String? budget) {
+    if (budget == null || budget.isEmpty) return 'Budget : Non spécifié';
+
+    final numericValue = double.tryParse(budget);
+    if (numericValue == null) return 'Budget : Non spécifié';
+
+    return 'Budget : ${numericValue.toStringAsFixed(0)}\$';
+  }
+
+  int? _calculateRemainingDays(String? endDate) {
+    if (endDate == null) return null;
+    try {
+      final end = DateTime.parse(endDate);
+      final now = DateTime.now();
+      final difference = end.difference(now).inDays;
+      return difference;
+    } catch (e) {
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(listProjectCtrlProvider);
@@ -83,7 +129,6 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
         opacity: _fadeAnimation,
         child: Column(
           children: [
-            _buildSearchSection(controller),
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () => controller.refresh(),
@@ -102,7 +147,6 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
         child: const Icon(Icons.arrow_upward, color: Colors.white),
         onPressed: () {
           controller.loadPrevPage();
-          // Optionnel: faire remonter légèrement la liste
           _scrollController.animateTo(
             0,
             duration: const Duration(milliseconds: 300),
@@ -112,7 +156,6 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
       )
           : null,
     );
-
   }
 
   PreferredSizeWidget _buildAppBar(ListProjectCtrl controller) {
@@ -120,6 +163,7 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
       elevation: 0,
       backgroundColor: cardBackground,
       foregroundColor: primaryColor,
+      automaticallyImplyLeading: false,
       title: Text(
         'Parcourir les projets',
         style: TextStyle(
@@ -130,7 +174,7 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
       ),
       actions: [
         Container(
-          margin: const EdgeInsets.only(right: 8),
+          margin: const EdgeInsets.only(right: 16),
           decoration: BoxDecoration(
             color: lightGray,
             borderRadius: BorderRadius.circular(8),
@@ -141,88 +185,7 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
             tooltip: 'Actualiser',
           ),
         ),
-        Container(
-          margin: const EdgeInsets.only(right: 16),
-          decoration: BoxDecoration(
-            color: accentColor,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: IconButton(
-            onPressed: () => navigation.replace('/public/create/project'),
-            icon: const Icon(Icons.add_rounded, color: Colors.white),
-            tooltip: 'Nouveau projet',
-          ),
-        ),
       ],
-    );
-  }
-
-  Widget _buildSearchSection(ListProjectCtrl controller) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: cardBackground,
-        border: Border(bottom: BorderSide(color: mediumGray, width: 1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Rechercher un projet',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: primaryColor,
-                ),
-              ),
-              Consumer(
-                builder: (_, ref, __) {
-                  final state = ref.watch(listProjectCtrlProvider);
-                  return Text(
-                    state.meta != null
-                        ? '${state.meta!.total} projet(s)'
-                        : '',
-                    style: TextStyle(fontSize: 14, color: darkGray),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _searchController,
-            style: TextStyle(color: primaryColor),
-            decoration: InputDecoration(
-              hintText: 'Nom du projet, description...',
-              hintStyle: TextStyle(color: darkGray),
-              prefixIcon: Icon(Icons.search_rounded, color: darkGray),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                icon: Icon(Icons.close_rounded, color: darkGray),
-                onPressed: () {
-                  _searchController.clear();
-                  controller.clearSearch();
-                },
-              )
-                  : null,
-              filled: true,
-              fillColor: lightGray,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: mediumGray),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
-            ),
-            onSubmitted: controller.searchProjects,
-          ),
-        ],
-      ),
     );
   }
 
@@ -247,7 +210,7 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
               }
               return AnimatedContainer(
                 duration: Duration(milliseconds: 100 * index),
-                child: _buildProjectCard(state.projects[index], index),
+                child: _buildProjectCard(state.projects[index]),
               );
             },
           ),
@@ -391,18 +354,14 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Icon(
-                state.searchQuery != null
-                    ? Icons.search_off_rounded
-                    : Icons.folder_open_rounded,
+                Icons.folder_open_rounded,
                 size: 64,
                 color: darkGray,
               ),
             ),
             const SizedBox(height: 20),
             Text(
-              state.searchQuery != null
-                  ? 'Aucun résultat trouvé'
-                  : 'Aucun projet disponible',
+              'Aucun projet disponible',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
@@ -411,36 +370,13 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
             ),
             const SizedBox(height: 8),
             Text(
-              state.searchQuery != null
-                  ? 'Essayez avec d\'autres mots-clés'
-                  : 'Créez votre premier projet pour commencer',
+              'Créez votre premier projet pour commencer',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: darkGray,
                 height: 1.5,
               ),
             ),
-            const SizedBox(height: 20),
-            if (state.searchQuery != null)
-              ElevatedButton.icon(
-                onPressed: () {
-                  _searchController.clear();
-                  controller.clearSearch();
-                },
-                icon: const Icon(Icons.clear_rounded),
-                label: const Text('Effacer la recherche'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: accentColor,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
           ],
         ),
       ),
@@ -495,7 +431,7 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
     );
   }
 
-  Widget _buildProjectCard(Project project, int index) {
+  Widget _buildProjectCard(Project project) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
@@ -514,7 +450,7 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
-            // Navigation vers les détails du projet
+            GoRouter.of(context).push('/public/projects/${project.slug}');
           },
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -545,6 +481,8 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
   }
 
   Widget _buildProjectHeader(Project project) {
+    final statusColor = _getStatusColor(project.status.name);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -568,7 +506,7 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
                 vertical: 4,
               ),
               decoration: BoxDecoration(
-                color: accentColor.withOpacity(0.1),
+                color: statusColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -578,17 +516,17 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
                     width: 6,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: accentColor,
+                      color: statusColor,
                       shape: BoxShape.circle,
                     ),
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    '${project.status.name}',
+                    project.status.name,
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: accentColor,
+                      color: statusColor,
                     ),
                   ),
                 ],
@@ -598,28 +536,25 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
         ),
         const SizedBox(height: 8),
         Text(
-          'Créé ${project.createdAt} par ${project.createdBy.name}',
+          'Créé le ${_formatDate(project.createdAt)} par ${project.createdBy.name}',
           style: TextStyle(
             fontSize: 13,
             color: darkGray,
           ),
         ),
-        if (project.budget != null) ...[
+        if (project.budget != null && project.budget!.isNotEmpty) ...[
           const SizedBox(height: 8),
           Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 6,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: accentColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: accentColor.withOpacity(0.3)),
             ),
             child: Text(
-              '${project.budget}\$',
+              _formatBudget(project.budget),
               style: TextStyle(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w500,
                 color: accentColor,
                 fontSize: 14,
               ),
@@ -658,7 +593,7 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '${project.dateStart} → ${project.dateEnd}',
+                  _formatPeriod(project.dateStart, project.dateEnd),
                   style: TextStyle(
                     fontSize: 13,
                     color: primaryColor,
@@ -666,58 +601,66 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
                   ),
                 ),
               ),
-            ],
-          ),
-          if (project.location != null) ...[
-            const SizedBox(height: 8),
-            Row(
-              children: [
+              if (project.location != null) ...[
+                const SizedBox(width: 16),
                 Icon(Icons.location_on_rounded, size: 16, color: darkGray),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    project.location!,
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: primaryColor,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    overflow: TextOverflow.ellipsis,
+                const SizedBox(width: 4),
+                Text(
+                  project.location!,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: primaryColor,
+                    fontWeight: FontWeight.w500,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
-            ),
-          ],
+            ],
+          ),
         ],
       ),
     );
   }
 
   Widget _buildProjectDomains(Project project) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: project.domains.map((domain) {
-        return Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 6,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Domaines concernés (${project.domains.length})',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: primaryColor,
           ),
-          decoration: BoxDecoration(
-            color: accentColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: accentColor.withOpacity(0.3)),
-          ),
-          child: Text(
-            domain.name,
-            style: TextStyle(
-              fontSize: 12,
-              color: accentColor,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        );
-      }).toList(),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: project.domains.map((domain) {
+            return Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: accentColor.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: accentColor.withOpacity(0.3)),
+              ),
+              child: Text(
+                domain.name,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: accentColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
@@ -734,8 +677,9 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
           ),
         ),
         const SizedBox(height: 12),
-        ...project.projectRolesSkills.take(2).map((roleSkill) {
+        ...project.projectRolesSkills.map((roleSkill) {
           return Container(
+            width: double.infinity,
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
@@ -759,7 +703,7 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
                   Wrap(
                     spacing: 6,
                     runSpacing: 6,
-                    children: roleSkill.skills.take(4).map((skill) {
+                    children: roleSkill.skills.map((skill) {
                       return Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 8,
@@ -786,73 +730,50 @@ class _ListProjectPageState extends ConsumerState<ListProjectPage>
             ),
           );
         }).toList(),
-        if (project.projectRolesSkills.length > 2)
-          Text(
-            '... et ${project.projectRolesSkills.length - 2} autre${project.projectRolesSkills.length - 2 > 1 ? 's' : ''} rôle${project.projectRolesSkills.length - 2 > 1 ? 's' : ''}',
-            style: TextStyle(
-              fontSize: 12,
-              color: darkGray,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
       ],
     );
   }
 
   Widget _buildProjectFooter(Project project) {
+    final remainingDays = _calculateRemainingDays(project.dateEnd);
+
     return Column(
       children: [
-        Row(
-          children: [
-            Icon(Icons.schedule_rounded, size: 16, color: darkGray),
-            const SizedBox(width: 8),
-            Text(
-              'Période : ${project.dateStart} → ${project.dateEnd}',
-              style: TextStyle(
-                fontSize: 13,
-                color: darkGray,
+        if (remainingDays != null) ...[
+          Row(
+            children: [
+              Icon(
+                remainingDays > 0 ? Icons.timer_outlined : Icons.timer_off_outlined,
+                size: 16,
+                color: remainingDays > 0 ? Colors.green : Colors.red,
               ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  // Action candidats
-                },
-                icon: Icon(Icons.people_outline_rounded, size: 16),
-                label: const Text('Candidats'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: darkGray,
-                  side: BorderSide(color: mediumGray),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+              const SizedBox(width: 8),
+              Text(
+                remainingDays > 0
+                    ? '$remainingDays jours restants'
+                    : 'Projet terminé',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: remainingDays > 0 ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
+            ],
+          ),
+          const SizedBox(height: 12),
+        ],
+        ElevatedButton(
+          onPressed: () => GoRouter.of(context).push('/public/projects/${project.slug}'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: accentColor,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            minimumSize: const Size(double.infinity, 48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: () => GoRouter.of(context).push('/public/projects/${project.slug}'),
-                icon: const Icon(Icons.arrow_forward_rounded, size: 16),
-                label: const Text('Voir le projet'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: accentColor,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-            ),
-          ],
+          ),
+          child: const Text('Voir les détails du projet'),
         ),
       ],
     );

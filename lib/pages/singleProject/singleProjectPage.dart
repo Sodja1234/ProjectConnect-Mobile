@@ -51,6 +51,22 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
     return currentUser?.id == project.createdBy.id;
   }
 
+  Color _getStatusColor(String status) {
+    final normalizedStatus = status.toLowerCase().trim();
+    switch (normalizedStatus) {
+      case 'en cours':
+        return const Color(0xFF4CAF50); // Green 500
+      case 'terminé':
+        return const Color(0xFF2196F3); // Blue 500
+      case 'annulé':
+        return const Color(0xFFF44336); // Red 500
+      case 'en attente':
+        return const Color(0xFFFF9800); // Orange 500
+      default:
+        return const Color(0xFF9E9E9E); // Grey 500
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(singleProjectCtrlProvider);
@@ -223,16 +239,16 @@ class _SingleProjectPageState extends ConsumerState<SingleProjectPage> {
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: accentColor.withOpacity(0.1),
+                              color: _getStatusColor(project.status.name).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: accentColor.withOpacity(0.3),
+                                color: _getStatusColor(project.status.name).withOpacity(0.3),
                               ),
                             ),
                             child: Text(
                               project.status.name,
                               style: theme.textTheme.labelLarge?.copyWith(
-                                color: accentColor,
+                                color: _getStatusColor(project.status.name),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),

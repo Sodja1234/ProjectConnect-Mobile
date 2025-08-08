@@ -23,14 +23,18 @@ import 'package:odc_mobile_template/framework/utils/localStorage/getStorageImpl.
 import 'package:odc_mobile_template/utils/http/HttpUtils.dart';
 import 'package:odc_mobile_template/utils/navigationUtils.dart';
 import 'package:odc_mobile_template/utils/localManager.dart'; // <-- Importe l'interface LocalManager
+import 'business/services/chat/chat_service_network.dart';
 import 'business/services/gestion/gestionLocalService.dart';
 import 'business/services/gestion/gestionNetworkService.dart';
 import 'MonApplication.dart';
+import 'business/services/message/message_service_network.dart';
 import 'business/services/user/profil/user_profil_network_service.dart';
 import 'business/services/user/userNetworkService.dart';
+import 'framework/chat/chat_service_network_imp.dart';
 import 'framework/gestion/gestionNetworkServiceImpl.dart';
 import 'framework/gestion/gestionLocalServiceImpl.dart';
 
+import 'framework/message/message_service_network_imp.dart';
 import 'framework/user/profil/user_network_service_impl.dart';
 import 'framework/user/userNetworkServiceImpl.dart';
 import 'framework/utils/http/remoteHttpUtils.dart';
@@ -76,6 +80,8 @@ void configureImplementations() {
   getIt.registerLazySingleton<RoleNetworkService>(() => RoleNetworkServiceImpl(baseUrl: baseUrl, httpUtils: getIt<HttpUtils>()));
   getIt.registerLazySingleton<SkillNetworkService>(() => SkillNetworkServiceImpl(baseUrl: baseUrl, httpUtils: getIt<HttpUtils>()));
   getIt.registerLazySingleton<CandidacyNetworkService>(()=>CandidacyNetworkServiceImpl(httpUtils: getIt<HttpUtils>(), baseUrl: baseUrl));
+  getIt.registerLazySingleton<ChatServiceNetwork>(() => ChatNetworkServiceImpl(baseUrl: baseUrl, httpUtils: getIt<HttpUtils>()));
+  getIt.registerLazySingleton<MessageNetworkService>(() => MessageNetworkServiceImpl(baseUrl: baseUrl, httpUtils: getIt<HttpUtils>()));
 }
 
 void main() async {
